@@ -1,0 +1,42 @@
+/.config/google-chrome/***
+/workspace/_media/_videos/@especial/***
+/workspace/_docs/***
+/workspace/_vault/***
+/workspace/_secrets-vault/***
+/workspace/_virtual-machines/***
+/workspace/_tools/firefox/***
+/.mozilla/***
+/__backup/logs/***
+go/pkg/***
+.cache/***
+/.config/[Cc]ode/logs/***
+/.config/[Cc]ode/[Bb]ackups/***
+/.config/[Cc]ode/[Cc]ached[Dd]ata/***
+/.config/[Cc]ode/[Cc]ache/***
+/.config/[Cc]ode/[Gg][Pp][Uu][Cc]ache/***
+/.config/[Cc]ode/[Gg][Pp][Uu][Cc]ache/***
+/.config/[Cc]ode/[Ss]ession [Ss]torage/***
+/.config/[Cc]ode/[Uu]ser/[Gg]lobal[Ss]torage/***
+/.config/[Cc]ode/[Uu]ser/[Ww]orkspace[Ss]torage/***
+/.config/protonmail/bridge/cache/***
+/.kube/cache/***
+/.kube/http-cache/***
+/.vscode/[CC]ache/***
+/.vscode/[Cc]ached[Dd]ata/***
+/.vscode/[Gg][Pp][Uu][Cc]ache/***
+/.vscode/extensions/***
+/.vscode/[Cc]ached[Ee]xtensions/***
+/.vscode/[Bb]ackups/***
+/.vscode/[Cc]ode [Cc]ache/***
+/.vscode/[Ss]ession [Ss]torage/***
+/.vscode/logs/***
+/.xsession-errors***
+/.local/share/tracker/***
+/.local/share/klipper/***
+/.local/share/[Rr]ecent[Dd]ocuments/***
+/.local/share/gvfs-*/***
+/.local/share/kactivitymanagerd/***
+/snap/[Ss]kype/***
+/snap/[Bb]itwarden/***
+/snap/[Rr]emmina/***
+/snap/[Tt]elegram*/***
