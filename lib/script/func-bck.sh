@@ -53,7 +53,7 @@ function c0rc_bck_init_params() {
     partition_label="${bck_name}-vault"
     local backend_device_rel=$(readlink "/dev/disk/by-partlabel/${partition_label}")
     if [ $? -ne 0 ]; then
-        c0rc_bck_err "error while resolving disk by backup partition label '${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}'"
+        c0rc_bck_err "error while resolving disk by backup partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}'"
         return 1
     elif [ -z $backend_device_rel ]; then
         c0rc_bck_err "backup partition label '${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}' resolved to empty disk path"
@@ -273,12 +273,6 @@ function c0rc_bck_open() {
     c0rc_bck_info "mount luks device: ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
     # }}}
 
-    c0rc_bck_info "previous up: ${TXT_COLOR_GREEN}$(sudo cat "$last_up_mark_file" || echo -n '<no data>')${TXT_COLOR_NONE}"
-    date '+%Y-%m-%dT%H:%M:%S%z, %A %b %d, %s' | sudo tee $last_up_mark_file >/dev/null
-    if [ $? -ne 0 ]; then
-        c0rc_bck_warn "error while writing out mark of device up"
-    fi
-
     # unmount ramfs {{{
     sudo umount -f "$ramfs_mnt_path" &&
         sudo rm -fdr "$ramfs_mnt_path"
@@ -286,6 +280,19 @@ function c0rc_bck_open() {
         c0rc_bck_warn "error while unmounting ramfs"
     fi
     # }}}
+
+    c0rc_bck_info "previous up '${TXT_COLOR_YELLOW}$(sudo cat "$last_up_mark_file" || echo -n '<no data>')'${TXT_COLOR_NONE}"
+    date '+%Y-%m-%dT%H:%M:%S%z, %A %b %d, %s' | sudo tee $last_up_mark_file >/dev/null
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while writing out mark of device up"
+    fi
+
+    local luks_device_uuid=$(lsblk -dn -o UUID "$encryption_mapper_full")
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while getting luks device uuid"
+    else
+        c0rc_bck_info "luks device uuid '${TXT_COLOR_YELLOW}$luks_device_uuid${TXT_COLOR_NONE}'"
+    fi
 
     return 0
 }
