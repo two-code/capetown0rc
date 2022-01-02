@@ -1,4 +1,4 @@
-module github.com/two-code/capetown0rc
+module github.com/two-code/capetown0rc.git/go
 
 go 1.17
 

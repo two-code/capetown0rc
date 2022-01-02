@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/two-code/capetown0rc/cmd/bck/timeshift"
+	"github.com/two-code/capetown0rc.git/go/cmd/bck/timeshift"
 )
 
 type (

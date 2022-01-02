@@ -1,13 +1,15 @@
-MAKEFILE_PATH := $(abspath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+MAKEFILE_DIR := $(abspath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 SHELL = /bin/bash
 
-COLOR_YELLOW="\033[38;2;255;255;0m"
-COLOR_RED="\033[38;2;255;0;0m"
-COLOR_GREEN="\033[38;2;0;255;0m"
-COLOR_CYAN="\033[0;36m"
-COLOR_NONE="\033[0m"
+export TXT_COLOR_YELLOW ?= "\033[0;33m"
+export C0RC_BIN_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/bin"}"TXT_COLOR_WHITE ?= "\033[1;37m"
+export C0RC_BIN_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/bin"}"TXT_COLOR_RED ?= "\033[1;31m"
+export C0RC_BIN_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/bin"}"TXT_COLOR_GREEN ?= "\033[0;32m"
+export C0RC_BIN_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/bin"}"TXT_COLOR_CYAN ?= "$\033[0;36m"
+export C0RC_BIN_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/bin"}"TXT_COLOR_NONE ?= "\033[0m"
+export C0RC_BIN_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/bin"}"TXT_SPLITTER ?= "========"
 
 .PHONY: build
 build:
-	@echo -en $(COLOR_YELLOW)[go build...]:$(COLOR_NONE)
-	@rm -fdR ./bin && go build -o ./bin/capetown0 . && echo -e $(COLOR_GREEN) success$(COLOR_NONE)
+	@echo -en $(TXT_COLOR_YELLOW)[go build...]:$(TXT_COLOR_NONE)
+	@rm -fv $(C0RC_BIN_DIR)/c0rc && go build -o $(C0RC_BIN_DIR)/c0rc $(C0RC_GO_DIR) && echo -e $(TXT_COLOR_GREEN) success$(TXT_COLOR_NONE)

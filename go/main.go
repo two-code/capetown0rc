@@ -6,7 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/two-code/capetown0rc/cmd/bck"
+	"github.com/two-code/capetown0rc.git/go/cmd/bck"
 )
 
 var (

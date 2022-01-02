@@ -1,53 +1,3 @@
-export __script_root="${HOME}/.capetown0rc"
-
-export __gpg_uid="me@vitalik-malkin.email"
-export __gpg_kid="9e3fc240cbe6345d79a2ba91757b48c7d9de7823"
-export __gpg_secrets_dir="$HOME/.secrets"
-
-export __2fa="${HOME}/.2fa"
-export __secrets="$HOME/.secrets"
-
-export __color_yellow='\033[38;2;255;255;0m'
-export __color_red='\033[38;2;255;0;0m'
-export __color_green='\033[38;2;0;255;0m'
-export __color_cyan='\033[0;36m'
-export __color_none='\033[0m'
-export TXT_COLOR_YELLOW="${TXT_COLOR_YELLOW:-\033[0;33m}"
-export TXT_COLOR_WHITE="${TXT_COLOR_WHITE:-\033[1;37m}"
-export TXT_COLOR_RED="${TXT_COLOR_RED:-\033[1;31m}"
-export TXT_COLOR_GREEN="${TXT_COLOR_GREEN:-\033[0;32m}"
-export TXT_COLOR_CYAN="${TXT_COLOR_CYAN:-\033[0;36m}"
-export TXT_COLOR_NONE="${TXT_COLOR_NONE:-\033[0m}"
-export TXT_SPLITTER="${TXT_SPLITTER:-========}"
-
-function _err() {
-    echo -e "${TXT_COLOR_RED}[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERR:${TXT_COLOR_NONE} $*" >&2
-}
-
-function _warn() {
-    echo -e "${TXT_COLOR_YELLOW}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} $*"
-}
-
-function _info() {
-    echo -e "${TXT_COLOR_CYAN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] INFO:${TXT_COLOR_NONE} $*"
-}
-
-function _srch2() {
-    {
-        tac ~/.zsh_history
-        tac /root/.zsh_history
-    } | uniq -iu | grep --color=always -E $1 | less -r
-}
-
-function _srch2_files() {
-    grep -r -n -o -E $(echo $1) $2 2>/dev/null
-    if [ $? -ne 0 ]; then
-        return 1
-    fi
-
-    return 0
-}
-
 function _otp() {
     oathtool -b --totp $(gpg2 --quiet -u "${__gpg_kid}" -r "me@vitalik-malkin.email" --decrypt $__2fa/$1)
 }
@@ -563,20 +513,6 @@ function g_msg() {
         return 1
     fi
     echo $msg
-
-    return 0
-}
-
-function g_cmt() {
-    git add --all &&
-        git commit -m "$2" --allow-empty &&
-        git push origin HEAD:$1
-    if [ $? -ne 0 ]; then
-        _err "error while comitting..."
-        return 1
-    fi
-
-    _info "all done"
 
     return 0
 }
