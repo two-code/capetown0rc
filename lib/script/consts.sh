@@ -1,4 +1,5 @@
 export TXT_COLOR_YELLOW="${TXT_COLOR_YELLOW:-\033[0;33m}"
+export TXT_COLOR_ORANGE="${TXT_COLOR_ORANGE:-\033[38;5;208m}"
 export TXT_COLOR_WHITE="${TXT_COLOR_WHITE:-\033[1;37m}"
 export TXT_COLOR_RED="${TXT_COLOR_RED:-\033[1;31m}"
 export TXT_COLOR_GREEN="${TXT_COLOR_GREEN:-\033[0;32m}"
@@ -28,3 +29,16 @@ export C0RC_2FA_DIR="${C0RC_2FA_DIR:-"${HOME}/.2fa"}"
 
 export GDK_SCALE=1.0
 export GDK_DPI_SCALE=1.0
+
+# backup {{{
+export C0RC_BCK_VOLUME_DEFAULT_FS="${C0RC_BCK_VOLUME_DEFAULT_FS:-ext4}"
+# }}}
+
+# security/crypto/luks {{{
+export C0RC_SHELL_SALT="${C0RC_SHELL_SALT:-$(head -c 16 /dev/urandom | xxd -l 16 -p -c 16)}"
+if [ $? -ne 0 ]; then
+    echo -e "${TXT_COLOR_YELLOW}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} error while setting value of '${TXT_COLOR_YELLOW}C0RC_SHELL_SALT${TXT_COLOR_NONE}'" >&2
+fi
+
+export C0RC_LUKS_DEFAULT_KEYSLOT="${C0RC_LUKS_DEFAULT_KEYSLOT:-4}"
+# }}}

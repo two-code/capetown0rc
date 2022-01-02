@@ -1,7 +1,3 @@
-function _otp() {
-    oathtool -b --totp $(gpg2 --quiet -u "${__gpg_kid}" -r "me@vitalik-malkin.email" --decrypt $__2fa/$1)
-}
-
 # commented by vitalik 2021-10-31T19:47
 # _bck() {
 #     echo -e "${__color_cyan}do backup plans: '$1', '$2' ${__color_none}";
