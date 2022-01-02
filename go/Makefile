@@ -11,7 +11,7 @@ export TXT_SPLITTER ?= ========
 
 .PHONY: build
 build:
-	@echo -e "$(TXT_COLOR_YELLOW)[go build]:$(TXT_COLOR_NONE) ..." \
-	&& rm -fv "$(C0RC_BIN_DIR)/c0rc" \
+	@echo -en "$(TXT_COLOR_YELLOW)[go build]:$(TXT_COLOR_NONE) ..." \
+	&& rm -f "$(C0RC_BIN_DIR)/c0rc" \
 	&& go build -o "$(C0RC_BIN_DIR)/c0rc" "$(C0RC_GO_DIR)" \
 	&& echo -e "$(TXT_COLOR_GREEN) OK$(TXT_COLOR_NONE)"
