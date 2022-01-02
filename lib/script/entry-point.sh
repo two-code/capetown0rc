@@ -3,8 +3,8 @@
 export C0RC_DIR="${C0RC_DIR:-"${HOME}/.capetown0rc"}"
 export C0RC_SCRIPT_DIR="${C0RC_SCRIPT_DIR:-"${C0RC_DIR}/lib/script"}"
 export C0RC_BIN_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/bin"}"
-export C0RC_TMP_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/tmp"}"
-export C0RC_GO_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/go"}"
+export C0RC_TMP_DIR="${C0RC_TMP_DIR:-"${C0RC_DIR}/tmp"}"
+export C0RC_GO_DIR="${C0RC_GO_DIR:-"${C0RC_DIR}/go"}"
 
 . $C0RC_SCRIPT_DIR/consts.sh
 . $C0RC_SCRIPT_DIR/msg.sh

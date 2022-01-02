@@ -391,12 +391,6 @@ function _dump_installed_pkgs() {
     return 0
 }
 
-function _restart_plasma() {
-    bash -c 'kquitapp5 plasmashell || killall plasmashell && kstart5 plasmashell &'
-
-    return 0
-}
-
 function _install_font_zip() {
     local font_file=$(realpath $1)
     if [ $? -ne 0 ]; then

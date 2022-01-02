@@ -18,4 +18,4 @@ alias __k8='kubectl'
 
 alias __go-vet='go mod tidy && go mod vendor && go vet ./...'
 
-alias _ps='ps -eLfMlyZ kuid,pid --cumulative'
+alias __ps='ps -eLfMlyZ kuid,pid --cumulative'
