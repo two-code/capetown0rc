@@ -56,3 +56,59 @@ function gg_cmt_with_last_msg() {
 
     return 0
 }
+
+function gg_stat() {
+    git status --long -b
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
+    return 0
+}
+
+function gg_del_tag() {
+    gg_info "delete tag matching grep pattern '$1'..."
+
+    local tags=$(git tag -l | grep -E "$1" | tr '\n' ' ')
+
+    for t in $(<<<$tags); do
+        git tag -d $t
+        if [ $? -ne 0 ]; then
+            gg_warn "error while deleting tag '$t'"
+        fi
+    done
+
+    for t in $(<<<$tags); do
+        git push origin :refs/tags/$t
+        if [ $? -ne 0 ]; then
+            gg_warn "error while deleting tag '$t'"
+        fi
+    done
+
+    gg_ok
+
+    return 0
+}
+
+function gg_add_tag() {
+    git tag -a "$1" -m "version $1" &&
+        git push origin "$1"
+    if [ $? -ne 0 ]; then
+        gg_err "error while adding tag"
+        return 1
+    fi
+
+    gg_ok
+
+    return 0
+}
+
+function gg_ls_tag() {
+    gg_info "list tags matching grep pattern '$1'..."
+
+    git tag -l | sort | grep -E "$1"
+
+    gg_ok
+
+    return 0
+}
