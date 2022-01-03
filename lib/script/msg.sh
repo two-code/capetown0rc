@@ -11,7 +11,7 @@ function c0rc_info() {
 }
 
 function c0rc_splitter() {
-    echo -e "${TXT_COLOR_WHITE}$TXT_SPLITTER${TXT_COLOR_NONE}"
+    echo -e "${TXT_SPLITTER_COLOR}$TXT_SPLITTER${TXT_SPLITTER_COLOR}"
 }
 
 function c0rc_ok() {

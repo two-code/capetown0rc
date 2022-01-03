@@ -60,12 +60,12 @@ function c0rc_bck_init_params() {
     header_decrypted="${ramfs_mnt_path}/${bck_name}-header"
 
     partition_label="${bck_name}-vault"
-    local backend_device_rel=$(readlink "/dev/disk/by-partlabel/${partition_label}")
+    local backend_device_rel=$(readlink "/dev/disk/by-partlabel/$partition_label")
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while resolving disk by backup partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}'"
         return 1
-    elif [ -z $backend_device_rel ]; then
-        c0rc_bck_err "backup partition label '${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}' resolved to empty disk path"
+    elif [ -z "$backend_device_rel" ]; then
+        c0rc_bck_err "backup partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}' resolved to empty disk path"
         return 1
     fi
     backend_device="/dev/$(basename $backend_device_rel)"
@@ -98,8 +98,6 @@ function c0rc_bck_init_params() {
 }
 
 function c0rc_bck_close() {
-    c0rc_bck_info "request to close backup device"
-
     if [ $# -ne 1 ]; then
         c0rc_bck_err "one argument specifying backup name expected"
         return 1
@@ -169,8 +167,6 @@ function c0rc_bck_close() {
 }
 
 function c0rc_bck_open() {
-    c0rc_bck_info "request to open backup device"
-
     if [ $# -lt 1 ]; then
         c0rc_bck_err "one argument specifying backup name expected"
         return 1
@@ -581,5 +577,41 @@ function c0rc_bck_run_system() {
         return 0
     else
         return 1
+    fi
+}
+
+function c0rc_bck_ls_system() {
+    if [ $# -ne 1 ]; then
+        c0rc_bck_err "one argument specifying backup target name expected"
+        return 1
+    fi
+
+    if ! command -v timeshift &>/dev/null; then
+        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}timeshift${TXT_COLOR_NONE}' available; possibly, you need to install it"
+        return 1
+    fi
+
+    local bck_target="$1"
+
+    local bck_device_uuid=""
+    c0rc_bck_open "$bck_target" bck_device_uuid
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while opening backup target device; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
+    sudo timeshift --list --snapshot-device "$bck_device_uuid"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while listing backups; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+    fi
+
+    c0rc_timeshift_mount_try_unmount
+
+    c0rc_bck_close "$bck_target"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while closing backup target device; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        return 1
+    else
+        return 0
     fi
 }
