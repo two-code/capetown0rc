@@ -162,7 +162,7 @@ function c0rc_bck_close() {
 function c0rc_bck_open() {
     c0rc_bck_info "request to open backup device"
 
-    if [ $# -ne 1 ]; then
+    if [ $# -lt 1 ]; then
         c0rc_bck_err "one argument specifying backup name expected"
         return 1
     fi
@@ -281,18 +281,26 @@ function c0rc_bck_open() {
     fi
     # }}}
 
+    # output info {{{
     c0rc_bck_info "previous up '${TXT_COLOR_YELLOW}$(sudo cat "$last_up_mark_file" || echo -n '<no data>')'${TXT_COLOR_NONE}"
     date '+%Y-%m-%dT%H:%M:%S%z, %A %b %d, %s' | sudo tee $last_up_mark_file >/dev/null
     if [ $? -ne 0 ]; then
         c0rc_bck_warn "error while writing out mark of device up"
     fi
 
-    local luks_device_uuid=$(lsblk -dn -o UUID "$encryption_mapper_full")
+    local luks_device_uuid_loc=$(lsblk -dn -o UUID "$encryption_mapper_full")
     if [ $? -ne 0 ]; then
-        c0rc_bck_warn "error while getting luks device uuid"
-    else
-        c0rc_bck_info "luks device uuid '${TXT_COLOR_YELLOW}$luks_device_uuid${TXT_COLOR_NONE}'"
+        c0rc_bck_err "error while getting luks device uuid"
+        c0rc_bck_close "$bck_name"
+        return 1
     fi
+
+    c0rc_bck_info "luks device uuid '${TXT_COLOR_YELLOW}$luks_device_uuid_loc${TXT_COLOR_NONE}'"
+
+    if [ $# -eq 2 ]; then
+        eval "$2=$luks_device_uuid_loc"
+    fi
+    # }}}
 
     return 0
 }
@@ -309,4 +317,153 @@ function c0rc_bck_open_close() {
     fi
 
     return 0
+}
+
+function c0rc_bck_run_insensitive_to() {
+    if [ $# -ne 1 ]; then
+        c0rc_bck_err "one argument specifying backup name expected"
+        return 1
+    fi
+
+    local backend_device=$(realpath /dev/disk/by-partlabel/$1)
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while getting device path for '${TXT_COLOR_YELLOW}$1${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
+    local mnt_pth="/mnt/tmp-$(c0rc_gen_uuid)"
+
+    sudo mkdir -p $mnt_pth &&
+        sudo chown vitalik:vitalik $mnt_pth
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while creating tmp mount point"
+        return 1
+    fi
+
+    sudo mount $backend_device "$mnt_pth"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while mounting '${TXT_COLOR_YELLOW}$backend_device${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
+    local save_loc="./insensitive/$(hostname)-$(date '+%Y%m%d_%H%M')-$(head -c 4 /dev/urandom | xxd -c 4 -l 4 -p)"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while generating name of tmp save location"
+        return 1
+    fi
+
+    pushd $mnt_pth >/dev/null
+    sudo mkdir -p $save_loc &&
+        sudo mkdir -p "$save_loc/root" &&
+        sudo mkdir -p "$save_loc/etc" &&
+        sudo mkdir -p "$save_loc/etc/apt" &&
+        sudo mkdir -p "$save_loc/etc/apt/sources.list.d" &&
+        sudo mkdir -p "$save_loc/usr/share/keyrings" &&
+        sudo mkdir -p "$save_loc/boot/grub/themes/kali" &&
+        sudo mkdir -p "$save_loc/workspace/_backup/os-settings" &&
+        sudo cp -ar ~/workspace/_backup/os-settings "$save_loc/workspace/_backup/" &&
+        sudo cp -ar ~/workspace/corsair-keyboard.ckb "$save_loc/workspace/" &&
+        sudo cp -ar ~/workspace/logitech-default.gpfl "$save_loc/workspace/" &&
+        sudo cp -ar ~/workspace/my-ublock-* "$save_loc/workspace/" &&
+        sudo cp -ar ~/.gitconfig "$save_loc/" &&
+        sudo cp -ar ~/.clickhouse-client-history "$save_loc/" &&
+        sudo cp -ar ~/.capetown0rc "$save_loc/" &&
+        sudo cp -ar ~/.secrets "$save_loc/" &&
+        sudo cp -ar ~/.ssh "$save_loc/" &&
+        sudo cp -ar ~/.2fa "$save_loc/" &&
+        sudo cp -ar ~/.zsh_history "$save_loc/" &&
+        sudo cp -ar ~/.zshrc "$save_loc/" &&
+        sudo cp -ar ~/.profile "$save_loc/" &&
+        sudo cp -ar /root/.zsh_history "$save_loc/root/" &&
+        sudo cp -ar /root/.zshrc "$save_loc/root/" &&
+        sudo cp -ar /root/.profile "$save_loc/root/" &&
+        sudo cp -ar /etc/environment "$save_loc/etc/" &&
+        sudo cp -ar /etc/ssh "$save_loc/etc/" &&
+        sudo cp -ar /etc/sddm "$save_loc/etc/" &&
+        sudo cp -ar /etc/sddm.conf.d "$save_loc/etc/" &&
+        sudo cp -ar /etc/sddm.conf "$save_loc/etc/" &&
+        sudo cp -ar /etc/apt/sources.list "$save_loc/etc/apt" &&
+        sudo cp -ar /etc/apt/sources.list.d "$save_loc/etc/apt" &&
+        sudo cp -ar /usr/share/keyrings "$save_loc/usr/share" &&
+        sudo cp -ar /etc/fstab "$save_loc/etc/" &&
+        sudo cp -ar /etc/crypttab "$save_loc/etc/" &&
+        sudo cp -ar /boot/grub/themes "$save_loc/boot/grub/themes" &&
+        sudo cp -ar /etc/default "$save_loc/etc/"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while copying"
+        popd >/dev/null
+        return 1
+    fi
+
+    sync -f
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while syncing fs"
+        popd >/dev/null
+        return 1
+    fi
+
+    local save_loc_full=$(realpath $save_loc)
+    for dir_to_remove in $(find ./insensitive -mindepth 1 -maxdepth 1 -type d | xargs realpath); do
+        if [ ! "$save_loc_full" = "$dir_to_remove" ]; then
+            c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': ..."
+            sudo chattr -i -R "$dir_to_remove"
+            sudo rm -fdr "$dir_to_remove"
+            if [ $? -ne 0 ]; then
+                c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+            else
+                c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+            fi
+        fi
+    done
+
+    sudo chattr +i -R "$save_loc"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while setting read-only attr"
+        popd >/dev/null
+        return 1
+    fi
+
+    sync -f
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while syncing fs"
+        popd >/dev/null
+        return 1
+    fi
+
+    c0rc_bck_info "size '${TXT_COLOR_YELLOW}$(du -sh $save_loc)${TXT_COLOR_NONE}'"
+    popd >/dev/null
+
+    c0rc_bck_info "total size '${TXT_COLOR_YELLOW}$(du -sh $mnt_pth)${TXT_COLOR_NONE}'"
+
+    sudo umount "$mnt_pth"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while unmounting backup device '${TXT_COLOR_YELLOW}$backend_device${TXT_COLOR_NONE}'"
+    fi
+
+    sudo rm -d "$mnt_pth"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while removing tmp mount point '${TXT_COLOR_YELLOW}$mnt_pth${TXT_COLOR_NONE}'"
+    fi
+
+    return 0
+}
+
+function c0rc_bck_run_insensitive() {
+    local has_fail='n'
+    for trg in $(<<<$C0RC_BCK_INSENSITIVE_TARGETS); do
+        c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ..."
+        c0rc_bck_run_insensitive_to "$trg"
+        if [ $? -ne 0 ]; then
+            has_fail='y'
+            c0rc_bck_warn "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+        else
+            c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+        fi
+    done
+
+    if [ "$has_fail" = 'n' ]; then
+        return 0
+    else
+        return 1
+    fi
 }

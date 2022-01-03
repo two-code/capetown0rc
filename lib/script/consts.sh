@@ -32,12 +32,25 @@ export GDK_DPI_SCALE=1.0
 
 # backup {{{
 export C0RC_BCK_VOLUME_DEFAULT_FS="${C0RC_BCK_VOLUME_DEFAULT_FS:-ext4}"
+
+export C0RC_BCK_INSENSITIVE_TARGETS="${C0RC_BCK_INSENSITIVE_TARGETS:-}"
+if [ -z $C0RC_BCK_INSENSITIVE_TARGETS ]; then
+    if [ "$(hostname)" = "capetown0" ]; then
+        C0RC_BCK_INSENSITIVE_TARGETS="bck7-key bck4-key"
+    elif [ "$(hostname)" = "capetown2" ]; then
+        C0RC_BCK_INSENSITIVE_TARGETS="bck3-key"
+    else
+        C0RC_BCK_INSENSITIVE_TARGETS=""
+        echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_INSENSITIVE_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+    fi
+fi
+
 # }}}
 
 # security/crypto/luks {{{
 export C0RC_SHELL_SALT="${C0RC_SHELL_SALT:-$(head -c 16 /dev/urandom | xxd -l 16 -p -c 16)}"
 if [ $? -ne 0 ]; then
-    echo -e "${TXT_COLOR_YELLOW}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} error while setting value of '${TXT_COLOR_YELLOW}C0RC_SHELL_SALT${TXT_COLOR_NONE}'" >&2
+    echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} error while setting value of '${TXT_COLOR_YELLOW}C0RC_SHELL_SALT${TXT_COLOR_NONE}'" >&2
 fi
 
 export C0RC_LUKS_DEFAULT_KEYSLOT="${C0RC_LUKS_DEFAULT_KEYSLOT:-4}"
