@@ -569,6 +569,7 @@ function c0rc_bck_run_system() {
         fi
     done
 
+    c0rc_splitter
     for trg in $(<<<$succeeded_targets); do
         c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
     done
