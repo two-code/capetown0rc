@@ -14,7 +14,7 @@ function c0rc_bck_warn() {
 }
 
 function c0rc_bck_ok() {
-    c0rc_bck_info " ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+    c0rc_bck_info "... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
     return 0
 }
 
