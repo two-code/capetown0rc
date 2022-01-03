@@ -478,7 +478,9 @@ function c0rc_bck_run_system_to() {
         c0rc_bck_err "no command '${TXT_COLOR_YELLOW}timeshift${TXT_COLOR_NONE}' available; possibly, you need to install it"
         return 1
     fi
-    if ! command -v c0rc &>/dev/null; then
+
+    local c0rc_cmd=$(command -v c0rc 2>/dev/null)
+    if [ ! -n "$c0rc_cmd" ]; then
         c0rc_bck_err "no command '${TXT_COLOR_YELLOW}c0rc${TXT_COLOR_NONE}' available; possibly, you need to install using 'go install github.com/two-code/capetown0rc.git/go' (or using make, if you have cloned repository)"
         return 1
     fi
@@ -507,7 +509,7 @@ function c0rc_bck_run_system_to() {
         return 1
     fi
 
-    sudo c0rc bck timeshift clean --retain-count=$C0RC_BCK_SYSTEM_RETENTION
+    sudo "$c0rc_cmd" bck timeshift clean --retain-count=$C0RC_BCK_SYSTEM_RETENTION
     if [ $? -ne 0 ]; then
         c0rc_bck_warn "error while cleaning backups; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
     fi
@@ -532,16 +534,38 @@ function c0rc_bck_run_system_to() {
 }
 
 function c0rc_bck_run_system() {
+    local targets=''
+    if [ $# -eq 1 ]; then
+        targets="$1"
+    elif [ $# -eq 0 ]; then
+        targets="$C0RC_BCK_SYSTEM_TARGETS"
+    else
+        c0rc_bck_err "too many args passed; only one argument allowed - specifying targets"
+        return 1
+    fi
+
     local has_fail='n'
-    for trg in $(<<<$C0RC_BCK_SYSTEM_TARGETS); do
+    local failed_targets=''
+    local succeeded_targets=''
+    for trg in $(<<<$targets); do
+        c0rc_splitter
         c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ..."
         c0rc_bck_run_system_to "$trg" "regular on $(date '+%Y-%m-%dT%H:%M:%S%z')"
         if [ $? -ne 0 ]; then
             has_fail='y'
+            failed_targets="$failed_targets $trg"
             c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
         else
+            succeeded_targets="$succeeded_targets $trg"
             c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
         fi
+    done
+
+    for trg in $(<<<$succeeded_targets); do
+        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+    done
+    for trg in $(<<<$failed_targets); do
+        c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
     done
 
     if [ "$has_fail" = 'n' ]; then

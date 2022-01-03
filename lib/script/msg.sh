@@ -10,6 +10,10 @@ function c0rc_info() {
     echo -e "${TXT_COLOR_CYAN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] INFO:${TXT_COLOR_NONE} $*"
 }
 
+function c0rc_splitter() {
+    echo -e "${TXT_COLOR_WHITE}$TXT_SPLITTER${TXT_COLOR_NONE}"
+}
+
 function c0rc_ok() {
     c0rc_info "OK"
 }
