@@ -45,15 +45,15 @@ if [ -z $C0RC_BCK_INSENSITIVE_TARGETS ]; then
     fi
 fi
 
-export C0RC_BCK_SENSITIVE_TARGETS="${C0RC_BCK_SENSITIVE_TARGETS:-}"
-if [ -z $C0RC_BCK_SENSITIVE_TARGETS ]; then
+export C0RC_BCK_SYSTEM_TARGETS="${C0RC_BCK_SYSTEM_TARGETS:-}"
+if [ -z $C0RC_BCK_SYSTEM_TARGETS ]; then
     if [ "$(hostname)" = "capetown0" ]; then
-        C0RC_BCK_SENSITIVE_TARGETS="bck7 bck4"
+        C0RC_BCK_SYSTEM_TARGETS="bck7 bck4"
     elif [ "$(hostname)" = "capetown2" ]; then
-        C0RC_BCK_SENSITIVE_TARGETS="bck3"
+        C0RC_BCK_SYSTEM_TARGETS="bck3"
     else
-        C0RC_BCK_SENSITIVE_TARGETS=""
-        echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_SENSITIVE_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        C0RC_BCK_SYSTEM_TARGETS=""
+        echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_SYSTEM_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 # }}}

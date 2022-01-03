@@ -468,9 +468,9 @@ function c0rc_bck_run_insensitive() {
     fi
 }
 
-function c0rc_bck_run_sensitive_to() {
-    if [ $# -ne 1 ]; then
-        c0rc_bck_err "one argument specifying backup name expected"
+function c0rc_bck_run_system_to() {
+    if [ $# -ne 2 ]; then
+        c0rc_bck_err "two arguments specifying backup target name and backup note expected"
         return 1
     fi
 
@@ -479,4 +479,65 @@ function c0rc_bck_run_sensitive_to() {
         return 1
     fi
 
+    local bck_target="$1"
+    local bck_note="$2"
+
+    local bck_device_uuid=""
+    c0rc_bck_open "$bck_target" bck_device_uuid
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while opening backup target device; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
+    sudo timeshift --create --comments "note: $bck_note" --snapshot-device "$bck_device_uuid"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while making backup; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_bck_close "$bck_target"
+        return 1
+    fi
+
+    sudo sync -f
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while syncing fs; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_bck_close "$bck_target"
+        return 1
+    fi
+
+    sudo timeshift --list --snapshot-device "$bck_device_uuid"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while listing backups; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+    fi
+
+    sudo umount "/run/timeshift/backup"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while unmounting timeshift mount point; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+    fi
+
+    c0rc_bck_close "$bck_target"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while closing backup target device; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        return 1
+    else
+        return 0
+    fi
+}
+
+function c0rc_bck_run_system() {
+    local has_fail='n'
+    for trg in $(<<<$C0RC_BCK_SYSTEM_TARGETS); do
+        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ..."
+        c0rc_bck_run_insensitive_to "$trg" "regular on $(date '+%Y-%m-%dT%H:%M:%S%z')"
+        if [ $? -ne 0 ]; then
+            has_fail='y'
+            c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+        else
+            c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+        fi
+    done
+
+    if [ "$has_fail" = 'n' ]; then
+        return 0
+    else
+        return 1
+    fi
 }
