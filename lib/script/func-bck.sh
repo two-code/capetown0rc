@@ -18,6 +18,15 @@ function c0rc_bck_ok() {
     return 0
 }
 
+function c0rc_timeshift_mount_try_unmount() {
+    sudo umount "/run/timeshift/backup"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while unmounting timeshift mount point ('${TXT_COLOR_YELLOW}/run/timeshift/backup${TXT_COLOR_NONE}')"
+    fi
+
+    return 0
+}
+
 function c0rc_bck_init_params() {
     if [ $# -ne 1 ]; then
         c0rc_bck_err "one argument specifying backup name expected"
@@ -498,6 +507,7 @@ function c0rc_bck_run_system_to() {
     sudo timeshift --create --comments "note: $bck_note" --snapshot-device "$bck_device_uuid"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while making backup; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_timeshift_mount_try_unmount
         c0rc_bck_close "$bck_target"
         return 1
     fi
@@ -505,6 +515,7 @@ function c0rc_bck_run_system_to() {
     sudo sync -f
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while syncing fs; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_timeshift_mount_try_unmount
         c0rc_bck_close "$bck_target"
         return 1
     fi
@@ -519,10 +530,7 @@ function c0rc_bck_run_system_to() {
         c0rc_bck_warn "error while listing backups; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
     fi
 
-    sudo umount "/run/timeshift/backup"
-    if [ $? -ne 0 ]; then
-        c0rc_bck_warn "error while unmounting timeshift mount point; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
-    fi
+    c0rc_timeshift_mount_try_unmount
 
     c0rc_bck_close "$bck_target"
     if [ $? -ne 0 ]; then
