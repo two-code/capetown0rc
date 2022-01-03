@@ -14,7 +14,7 @@ function c0rc_bck_warn() {
 }
 
 function c0rc_bck_ok() {
-    c0rc_bck_info "OK"
+    c0rc_bck_info " ... OK"
     return 0
 }
 

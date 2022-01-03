@@ -53,12 +53,6 @@
 #
 # }
 
-function _get_secret() {
-    locFileName=$(echo $1 | basenc --base32hex)
-    locFileName="${__gpg_secrets_dir}/${locFileName}"
-    gpg2 --quiet -u "${__gpg_kid}" -r "me@vitalik-malkin.email" --decrypt "${locFileName}"
-}
-
 function _set_secret() {
     locFileName=$(echo $1 | basenc --base32hex)
     locFileName="${__gpg_secrets_dir}/${locFileName}"

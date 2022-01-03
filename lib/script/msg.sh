@@ -15,5 +15,5 @@ function c0rc_splitter() {
 }
 
 function c0rc_ok() {
-    c0rc_info "OK"
+    c0rc_info " ... OK"
 }
