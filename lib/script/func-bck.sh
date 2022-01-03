@@ -467,3 +467,16 @@ function c0rc_bck_run_insensitive() {
         return 1
     fi
 }
+
+function c0rc_bck_run_sensitive_to() {
+    if [ $# -ne 1 ]; then
+        c0rc_bck_err "one argument specifying backup name expected"
+        return 1
+    fi
+
+    if ! command -v timeshift &>/dev/null; then
+        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}timeshift${TXT_COLOR_NONE}' available; possibly, you need to install it"
+        return 1
+    fi
+
+}

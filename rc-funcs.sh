@@ -176,11 +176,6 @@ function _bck_timeshift_regular() {
     return 0
 }
 
-function _bck_insensitive() {
-    _bck_insensitive_one "bck7-key"
-    _bck_insensitive_one "bck4-key"
-}
-
 function _upgrade_pkgs() {
     sudo apt-get update && sudo apt-get check
     if [ $? -ne 0 ]; then

@@ -43,7 +43,7 @@ function c0rc_hash_default() {
     fi
 
     if ! command -v sha256 &>/dev/null; then
-        c0rc_err "no command sha256 available; possibly, you need to install 'hashalot' package"
+        c0rc_err "no command '${TXT_COLOR_YELLOW}sha256${TXT_COLOR_NONE}' available; possibly, you need to install it"
         return 1
     fi
 
