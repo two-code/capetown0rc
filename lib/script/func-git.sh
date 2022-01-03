@@ -14,7 +14,7 @@ function gg_warn() {
 }
 
 function gg_ok() {
-    gg_info " ... OK"
+    gg_info " ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
     return 0
 }
 
