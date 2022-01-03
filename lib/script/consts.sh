@@ -56,6 +56,8 @@ if [ -z $C0RC_BCK_SYSTEM_TARGETS ]; then
         echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_SYSTEM_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
+
+export C0RC_BCK_SYSTEM_RETENTION="${C0RC_BCK_SYSTEM_RETENTION:-11}"
 # }}}
 
 # security/crypto/luks {{{

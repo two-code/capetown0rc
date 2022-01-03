@@ -478,6 +478,10 @@ function c0rc_bck_run_system_to() {
         c0rc_bck_err "no command '${TXT_COLOR_YELLOW}timeshift${TXT_COLOR_NONE}' available; possibly, you need to install it"
         return 1
     fi
+    if ! command -v c0rc &>/dev/null; then
+        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}c0rc${TXT_COLOR_NONE}' available; possibly, you need to install using 'go install github.com/two-code/capetown0rc.git/go' (or using make, if you have cloned repository)"
+        return 1
+    fi
 
     local bck_target="$1"
     local bck_note="$2"
@@ -503,6 +507,11 @@ function c0rc_bck_run_system_to() {
         return 1
     fi
 
+    sudo c0rc bck timeshift clean --retain-count=$C0RC_BCK_SYSTEM_RETENTION
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "error while cleaning backups; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+    fi
+
     sudo timeshift --list --snapshot-device "$bck_device_uuid"
     if [ $? -ne 0 ]; then
         c0rc_bck_warn "error while listing backups; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
@@ -526,7 +535,7 @@ function c0rc_bck_run_system() {
     local has_fail='n'
     for trg in $(<<<$C0RC_BCK_SYSTEM_TARGETS); do
         c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ..."
-        c0rc_bck_run_insensitive_to "$trg" "regular on $(date '+%Y-%m-%dT%H:%M:%S%z')"
+        c0rc_bck_run_system_to "$trg" "regular on $(date '+%Y-%m-%dT%H:%M:%S%z')"
         if [ $? -ne 0 ]; then
             has_fail='y'
             c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
