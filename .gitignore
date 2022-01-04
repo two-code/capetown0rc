@@ -3,6 +3,7 @@ bin/*
 !bin/.gitkeep
 tmp/*
 !tmp/.gitkeep
+!tmp/garbage
 
 # Golang. No coverage, pprofs, any reports from testing cmd.
 _coverage.*
