@@ -57,17 +57,33 @@ function c0rc_hash_default() {
 }
 
 function c0rc_secret_get() {
-    if [ $# -ne 1 ]; then
+    local stdout="n"
+    local secret_name=""
+    if [ $# -lt 1 ]; then
         c0rc_err "one argument specifying secret name expected"
         return 1
-    fi
-
-    if ! command -v xsel &>/dev/null; then
-        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}xsel${TXT_COLOR_NONE}' available; possibly, you need to install it"
+    elif [ $# -eq 1 ]; then
+        secret_name="$1"
+    elif [ $# -eq 2 ]; then
+        secret_name="$1"
+        if [ "$2" = "y" ] || [ "$2" = "stdout" ]; then
+            stdout="y"
+        else
+            c0rc_err "second argument specifying output method has invalid value; 'y' or 'stdout' expected"
+            return 1
+        fi
+    else
+        c0rc_err "too many args; one argument specifying secret name expected"
         return 1
     fi
 
-    local secret_name="$1"
+    if [ ! "$stdout" = "y" ]; then
+        if ! command -v xsel &>/dev/null; then
+            c0rc_bck_err "no command '${TXT_COLOR_YELLOW}xsel${TXT_COLOR_NONE}' available; possibly, you need to install it"
+            return 1
+        fi
+    fi
+
     local secret_file="$C0RC_SECRETS_DIR/$(basenc --base32hex <<<$secret_name)"
     if [ $? -ne 0 ]; then
         c0rc_err "error while encoding secret name"
@@ -83,13 +99,17 @@ function c0rc_secret_get() {
         return 1
     fi
 
-    echo -n $secret_decrypted | xsel -ib
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while putting secret into clipboard"
-        return 1
+    if [ ! "$stdout" = "y" ]; then
+        echo -n $secret_decrypted
     else
-        c0rc_info "secret put into clipboard"
-        return 0
+        echo -n $secret_decrypted | xsel -ib
+        if [ $? -ne 0 ]; then
+            c0rc_err "error while putting secret into clipboard"
+            return 1
+        else
+            c0rc_info "secret put into clipboard"
+            return 0
+        fi
     fi
 }
 
