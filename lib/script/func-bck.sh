@@ -506,12 +506,12 @@ function c0rc_bck_run_system_to() {
         return 1
     fi
 
-    if [ -d "$C0RC_WS_DOCS_DIR" ] && [ -z "$(ls -A "$C0RC_WS_DOCS_DIR")" ]; then
+    if [ -d "$C0RC_WS_DOCS_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_DOCS_DIR")" ]; then
         c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_DOCS_DIR${TXT_COLOR_NONE}' not empty; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
         return 1
     fi
 
-    if [ -d "$C0RC_WS_VIDESS_DIR" ] && [ -z "$(ls -A "$C0RC_WS_VIDESS_DIR")" ]; then
+    if [ -d "$C0RC_WS_VIDESS_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_VIDESS_DIR")" ]; then
         c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_VIDESS_DIR${TXT_COLOR_NONE}' not empty; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
         return 1
     fi
