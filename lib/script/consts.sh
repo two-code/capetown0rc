@@ -31,7 +31,7 @@ if [ -z $C0RC_GPG_CMD_OPTS ]; then
 fi
 # }}}
 
-export C0RC_SECRETS_DIR="${C0RC_SECRETS_DIR:-"${HOME}/.secrets"}"
+export C0RC_SECRETS_DIR="${C0RC_SECRETS_DIR:-"$HOME/.secrets"}"
 export C0RC_2FA_DIR="${C0RC_2FA_DIR:-"${HOME}/.2fa"}"
 
 export GDK_SCALE=1.0
@@ -91,4 +91,13 @@ if [ $? -ne 0 ]; then
 fi
 
 export C0RC_LUKS_DEFAULT_KEYSLOT="${C0RC_LUKS_DEFAULT_KEYSLOT:-4}"
+
+export C0RC_PLAIN_TEXT_SECRET_FILE_NAME_EXT="${C0RC_PLAIN_TEXT_SECRET_FILE_NAME_EXT:-.c0rc-secret}"
+# }}}
+
+# workspace {{{
+export C0RC_WS_DIR="${C0RC_WS_DIR:-"$HOME/workspace"}"
+export C0RC_WS_DOCS_DIR="${C0RC_WS_DOCS_DIR:-"$C0RC_WS_DIR/_docs"}"
+export C0RC_WS_DOCS_ENC_DIR="${C0RC_WS_DOCS_ENC_DIR:-"$C0RC_WS_DIR/_docs_secured"}"
+export C0RC_WS_DOCS_ENC_SECRET_NAME="${C0RC_WS_DOCS_ENC_SECRET_NAME:-doc}"
 # }}}

@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/bin/env zsh
 
 export C0RC_DIR="${C0RC_DIR:-"${HOME}/.capetown0rc"}"
 export C0RC_SCRIPT_DIR="${C0RC_SCRIPT_DIR:-"${C0RC_DIR}/lib/script"}"

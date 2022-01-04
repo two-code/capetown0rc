@@ -56,6 +56,48 @@ function c0rc_hash_default() {
     return 0
 }
 
+function c0rc_secret_name_to_file_name() {
+    if [ $# -ne 1 ]; then
+        c0rc_err "one argument specifying secret name expected"
+        return 1
+    fi
+
+    local secret_name="$1"
+    local secret_file="$(basenc --base32hex <<<$secret_name)$C0RC_PLAIN_TEXT_SECRET_FILE_NAME_EXT"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while encoding secret name '${TXT_COLOR_YELLOW}$secret_name${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
+    echo -n "$secret_file"
+
+    return 0
+}
+
+function c0rc_secret_file_name_to_name() {
+    if [ $# -ne 1 ]; then
+        c0rc_err "one argument specifying secret file name expected"
+        return 1
+    fi
+
+    local secret_file="$1"
+    local secret_file_no_ext="$(echo -n "$secret_file" | sed "s/${C0RC_PLAIN_TEXT_SECRET_FILE_NAME_EXT}$//")"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while decoding secret file name '${TXT_COLOR_YELLOW}$secret_file${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
+    local secret_name="$(basenc --decode --base32hex <<<$secret_file_no_ext)"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while decoding secret file name '${TXT_COLOR_YELLOW}$secret_file_no_ext${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
+    echo -n "$secret_name"
+
+    return 0
+}
+
 function c0rc_secret_get() {
     local stdout="n"
     local secret_name=""
@@ -84,9 +126,8 @@ function c0rc_secret_get() {
         fi
     fi
 
-    local secret_file="$C0RC_SECRETS_DIR/$(basenc --base32hex <<<$secret_name)"
+    local secret_file="$C0RC_SECRETS_DIR/$(c0rc_secret_name_to_file_name "$secret_name")"
     if [ $? -ne 0 ]; then
-        c0rc_err "error while encoding secret name"
         return 1
     elif [ ! -f $secret_file ]; then
         c0rc_err "no file for secret found"
@@ -125,9 +166,8 @@ function c0rc_secret_set() {
     fi
 
     local secret_name="$1"
-    local secret_out_file="$C0RC_SECRETS_DIR/$(basenc --base32hex <<<$secret_name)"
+    local secret_out_file="$C0RC_SECRETS_DIR/$(c0rc_secret_name_to_file_name "$secret_name")"
     if [ $? -ne 0 ]; then
-        c0rc_err "error while encoding secret name"
         return 1
     elif [ -e $secret_out_file ]; then
         c0rc_err "such secret name '${TXT_COLOR_YELLOW}$secret_name${TXT_COLOR_NONE}' already in use; that secret stores in '${TXT_COLOR_YELLOW}$secret_out_file${TXT_COLOR_NONE}' file"
@@ -175,13 +215,27 @@ function c0rc_secret_file_get() {
     fi
 
     local secret_name="$1"
-    local secret_file="$C0RC_SECRETS_DIR/$(basenc --base32hex <<<$secret_name)"
+    local secret_file="$C0RC_SECRETS_DIR/$(c0rc_secret_name_to_file_name "$secret_name")"
     if [ $? -ne 0 ]; then
-        c0rc_err "error while encoding secret name"
         return 1
     fi
 
     print "$secret_file"
+
+    return 0
+}
+
+function c0rc_secret_ls() {
+    for secret_file in $(find "$C0RC_SECRETS_DIR" -maxdepth 1 -iname "*$C0RC_PLAIN_TEXT_SECRET_FILE_NAME_EXT" -type f); do
+        local secret_file_base_name=$(basename "$secret_file")
+
+        local secret_name="$(c0rc_secret_file_name_to_name "$secret_file_base_name")"
+        if [ $? -ne 0 ]; then
+            c0rc_warn "can't decode secret file name '${TXT_COLOR_YELLOW}$secret_file_base_name${TXT_COLOR_NONE}' as secret name"
+        else
+            c0rc_info "'${TXT_COLOR_YELLOW}$secret_name${TXT_COLOR_NONE}' -> '${TXT_COLOR_YELLOW}$secret_file${TXT_COLOR_NONE}'"
+        fi
+    done
 
     return 0
 }

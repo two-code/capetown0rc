@@ -53,12 +53,6 @@
 #
 # }
 
-function _set_secret() {
-    locFileName=$(echo $1 | basenc --base32hex)
-    locFileName="${__gpg_secrets_dir}/${locFileName}"
-    gpg2 -u "${__gpg_kid}" -r "${__gpg_uid}" --quiet --encrypt -o "${locFileName}" && echo -e "\n${__color_yellow}done.${__color_none}"
-}
-
 function _docs_up() {
     $__script_root/__docs-up.sh &&
         _info "${TXT_COLOR_GREEN}[_docs_up]${TXT_COLOR_NONE}: all done"
