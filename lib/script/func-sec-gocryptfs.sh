@@ -22,7 +22,14 @@ function c0rc_gocfs_unlock() {
 
     c0rc_info "unlocking '${TXT_COLOR_YELLOW}$frontend_dir${TXT_COLOR_NONE}' directory: $C0RC_OP_PROGRESS"
 
-    gocryptfs -fsck -extpass "$C0RC_SCRIPT_DIR/ask-secret.sh" -extpass "$unlock_secret_name" "$backend_dir"
+    mkdir -p "$frontend_dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while creating directory '${TXT_COLOR_YELLOW}$frontend_dir${TXT_COLOR_NONE}'"
+        c0rc_err "unlocking '${TXT_COLOR_YELLOW}$frontend_dir${TXT_COLOR_NONE}' directory: $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    gocryptfs -fsck -extpass "$C0RC_SCRIPT_DIR/ask-secret.sh" -extpass "$unlock_secret_name" "$backend_dir" >/dev/null
     if [ $? -ne 0 ]; then
         c0rc_warn "file system consistency check: $C0RC_OP_FAIL"
         c0rc_err "unlocking '${TXT_COLOR_YELLOW}$frontend_dir${TXT_COLOR_NONE}' directory: $C0RC_OP_FAIL"
