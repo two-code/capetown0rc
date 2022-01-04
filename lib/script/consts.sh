@@ -32,8 +32,8 @@ export GDK_SCALE=1.0
 export GDK_DPI_SCALE=1.0
 
 # backup {{{
-readonly C0RC_BCK_KIND_SYSTEM="system"
-readonly C0RC_BCK_KIND_INSENSITIVE="insensitive"
+export readonly C0RC_BCK_KIND_SYSTEM="system"
+export readonly C0RC_BCK_KIND_INSENSITIVE="insensitive"
 
 export C0RC_BCK_VOLUME_DEFAULT_FS="${C0RC_BCK_VOLUME_DEFAULT_FS:-ext4}"
 
