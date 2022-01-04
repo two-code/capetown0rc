@@ -607,7 +607,7 @@ function c0rc_bck_run_regular() {
         if [ "$knd" = "$C0RC_BCK_KIND_INSENSITIVE" ]; then
             c0rc_bck_run_insensitive && knd_status=0
         elif [ "$knd" = "$C0RC_BCK_KIND_SYSTEM" ]; then
-            c0rc_bck_run_insensitive && knd_status=0
+            c0rc_bck_run_system && knd_status=0
         else
             c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': specified kind is unsupported"
         fi
