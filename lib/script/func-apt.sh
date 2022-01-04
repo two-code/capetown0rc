@@ -33,12 +33,12 @@ function c0rc_apt_dump_installed_pkgs() {
 
     local pkg_count=$(wc -l <~/.installed-pkgs.tmp)
 
-    _info "total packages count: ${pkg_count}"
+    c0rc_info "total packages count: ${pkg_count}"
     if ((pkg_count > 0)); then
         local save_loc="$C0RC_WS_BCK_OSSETTINGS_DIR/$(hostname)/installed-pkgs"
         mkdir -pv "${save_loc}"
         save_loc="${save_loc}/$(date '+%Y%m%d_%H%M%S').txt"
-        cp -a ~/.installed-pkgs.tmp "${save_loc}" && _info "saved to: ${save_loc}"
+        cp -a ~/.installed-pkgs.tmp "${save_loc}" && c0rc_info "saved to: ${save_loc}"
     fi
 
     rm -f ~/.installed-pkgs.tmp
