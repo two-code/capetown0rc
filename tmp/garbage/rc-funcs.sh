@@ -53,55 +53,6 @@
 #
 # }
 
-function _docs_up() {
-    $__script_root/__docs-up.sh &&
-        _info "${TXT_COLOR_GREEN}[_docs_up]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _docs_down() {
-    $__script_root/__docs-down.sh &&
-        _info "${TXT_COLOR_GREEN}[_docs_down]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _secs_up() {
-    $__script_root/__sec-up.sh &&
-        _info "${TXT_COLOR_GREEN}[_secs_up]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _secs_down() {
-    $__script_root/__sec-down.sh &&
-        _info "${TXT_COLOR_GREEN}[_secs_down]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck3_timeshift() {
-    $__script_root/__bck3-up.sh &&
-        sudo timeshift --create --comments "note: $1" --snapshot-device ee29302d-f7e7-407b-9896-8cff86efed75 &&
-        sync -f &&
-        _bck_timeshift_clean &&
-        sudo timeshift --list --snapshot-device ee29302d-f7e7-407b-9896-8cff86efed75 &&
-        sudo umount --verbose "/run/timeshift/backup" &&
-        $__script_root/__bck3-down.sh &&
-        _info "${TXT_COLOR_GREEN}[_bck3_timeshift]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck3_up() {
-    $__script_root/__bck3-up.sh &&
-        _info "${TXT_COLOR_GREEN}[_bck3_up]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck3_down() {
-    sudo umount --verbose "/run/timeshift/backup"
-    $__script_root/__bck3-down.sh &&
-        _info "${TXT_COLOR_GREEN}[_bck3_down]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
 function _upgrade_pkgs() {
     sudo apt-get update && sudo apt-get check
     if [ $? -ne 0 ]; then
@@ -136,56 +87,6 @@ function _upgrade_pkgs() {
     if [ -n "${kali_pkgs}" ]; then
         _warn "upgradable kali packages:\n${kali_pkgs}"
     fi
-
-    _info "all done"
-
-    return 0
-}
-
-function _dump_installed_pkgs() {
-    local pkgs=$(sudo apt list --installed 2>/dev/null | sort | perl -n -e'/^([^\/]+)\/.+$/ && print "$1 "')
-    if [ $? -ne 0 ]; then
-        _err "error while listing installed packages"
-        return 1
-    fi
-
-    echo -n "" >~/.installed-pkgs.tmp
-    for pkg_name in $(echo $pkgs); do
-        local pkg_status=$(dpkg -s $pkg_name)
-        if [ $? -ne 0 ]; then
-            _err "error while getting status of package $pkg_name"
-            rm -f ~/.installed-pkgs.tmp
-            return 1
-        fi
-
-        local pkg_version=$(echo $pkg_status | perl -n -e'/^Version:\s(.+)$/ && print "$1"')
-        if [ $? -ne 0 ]; then
-            _err "error while getting status of package $pkg_name"
-            rm -f ~/.installed-pkgs.tmp
-            return 1
-        fi
-
-        _info "${pkg_name}=${pkg_version}"
-        echo "${pkg_name}=${pkg_version}" >>~/.installed-pkgs.tmp
-    done
-
-    sync -f
-    if [ $? -ne 0 ]; then
-        _err "error while flushing fs buffers"
-        return 1
-    fi
-
-    local pkg_count=$(wc -l <~/.installed-pkgs.tmp)
-
-    _info "total packages count: ${pkg_count}"
-    if ((pkg_count > 0)); then
-        local save_loc="/home/vitalik/workspace/_backup/os-settings/$(hostname)/installed-pkgs"
-        mkdir -pv "${save_loc}"
-        save_loc="${save_loc}/$(date '+%Y%m%d_%H%M%S').txt"
-        cp -a ~/.installed-pkgs.tmp "${save_loc}" && _info "saved to: ${save_loc}"
-    fi
-
-    rm -f ~/.installed-pkgs.tmp
 
     _info "all done"
 
