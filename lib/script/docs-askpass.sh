@@ -11,6 +11,6 @@ fi
 
 c0rc_secret_get "$C0RC_WS_DOCS_ENC_SECRET_NAME" stdout
 if [ $? -ne 0 ]; then
-    c0rc_err "error while getting unlocking secret"
+    c0rc_err "error while getting unlock secret"
     exit 1
 fi
