@@ -454,15 +454,20 @@ function c0rc_bck_run_insensitive_to() {
 }
 
 function c0rc_bck_run_insensitive() {
+    if [ $# -ne 0 ]; then
+        c0rc_bck_err "too many args; no args expected"
+        return 1
+    fi
+
     local has_fail='n'
     for trg in $(<<<$C0RC_BCK_INSENSITIVE_TARGETS); do
         c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ..."
         c0rc_bck_run_insensitive_to "$trg"
         if [ $? -ne 0 ]; then
             has_fail='y'
-            c0rc_bck_warn "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+            c0rc_bck_warn "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
         else
-            c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+            c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
         fi
     done
 
@@ -558,19 +563,71 @@ function c0rc_bck_run_system() {
         if [ $? -ne 0 ]; then
             has_fail='y'
             failed_targets="$failed_targets $trg"
-            c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+            c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
         else
             succeeded_targets="$succeeded_targets $trg"
-            c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+            c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
         fi
     done
 
     c0rc_splitter
     for trg in $(<<<$succeeded_targets); do
-        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
     done
     for trg in $(<<<$failed_targets); do
-        c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+        c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+    done
+
+    if [ "$has_fail" = 'n' ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function c0rc_bck_run_regular() {
+    local kinds=''
+    if [ $# -eq 1 ]; then
+        kinds="$1"
+    elif [ $# -eq 0 ]; then
+        kinds="$C0RC_BCK_REGULAR_PLAN_KINDS"
+    else
+        c0rc_bck_err "too many args passed; only one argument allowed - specifying kinds"
+        return 1
+    fi
+
+    local has_fail='n'
+    local failed_kinds=''
+    local succeeded_kinds=''
+    for knd in $(<<<$kinds); do
+        c0rc_splitter
+        c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ..."
+
+        local knd_status=1
+        if [ "$knd" = "$C0RC_BCK_KIND_INSENSITIVE" ]; then
+            c0rc_bck_run_insensitive && knd_status=0
+        elif [ "$knd" = "$C0RC_BCK_KIND_SYSTEM" ]; then
+            c0rc_bck_run_insensitive && knd_status=0
+        else
+            c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': specified kind is unsupported"
+        fi
+
+        if [ $knd_status -ne 0 ]; then
+            has_fail='y'
+            failed_kinds="$failed_kinds $knd"
+            c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+        else
+            succeeded_kinds="$succeeded_kinds $knd"
+            c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+        fi
+    done
+
+    c0rc_splitter
+    for knd in $(<<<$succeeded_kinds); do
+        c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+    done
+    for knd in $(<<<$failed_kinds); do
+        c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
     done
 
     if [ "$has_fail" = 'n' ]; then

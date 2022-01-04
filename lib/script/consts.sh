@@ -32,6 +32,9 @@ export GDK_SCALE=1.0
 export GDK_DPI_SCALE=1.0
 
 # backup {{{
+readonly C0RC_BCK_KIND_SYSTEM="system"
+readonly C0RC_BCK_KIND_INSENSITIVE="insensitive"
+
 export C0RC_BCK_VOLUME_DEFAULT_FS="${C0RC_BCK_VOLUME_DEFAULT_FS:-ext4}"
 
 export C0RC_BCK_INSENSITIVE_TARGETS="${C0RC_BCK_INSENSITIVE_TARGETS:-}"
@@ -59,6 +62,18 @@ if [ -z $C0RC_BCK_SYSTEM_TARGETS ]; then
 fi
 
 export C0RC_BCK_SYSTEM_RETENTION="${C0RC_BCK_SYSTEM_RETENTION:-11}"
+
+export C0RC_BCK_REGULAR_PLAN_KINDS="${C0RC_BCK_REGULAR_PLAN_KINDS:-}"
+if [ -z $C0RC_BCK_REGULAR_PLAN_KINDS ]; then
+    if [ "$(hostname)" = "capetown0" ]; then
+        C0RC_BCK_REGULAR_PLAN_KINDS="$C0RC_BCK_KIND_INSENSITIVE $C0RC_BCK_KIND_SYSTEM"
+    elif [ "$(hostname)" = "capetown2" ]; then
+        C0RC_BCK_REGULAR_PLAN_KINDS="$C0RC_BCK_KIND_INSENSITIVE $C0RC_BCK_KIND_SYSTEM"
+    else
+        C0RC_BCK_REGULAR_PLAN_KINDS=""
+        echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_REGULAR_PLAN_KINDS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+    fi
+fi
 # }}}
 
 # security/crypto/luks {{{

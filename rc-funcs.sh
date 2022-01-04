@@ -108,68 +108,6 @@ function _bck3_down() {
     return 0
 }
 
-function _bck4_timeshift() {
-    $__script_root/__bck4-up.sh &&
-        sudo timeshift --create --comments "note: $1" --snapshot-device 52997247-9b4a-4cae-80c1-8fd4bdb384ae &&
-        sync -f &&
-        _bck_timeshift_clean &&
-        sudo timeshift --list --snapshot-device 52997247-9b4a-4cae-80c1-8fd4bdb384ae &&
-        sudo umount --verbose "/run/timeshift/backup" &&
-        $__script_root/__bck4-down.sh &&
-        _info "${TXT_COLOR_GREEN}[_bck4_timeshift]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck4_up() {
-    $__script_root/__bck4-up.sh &&
-        _info "${TXT_COLOR_GREEN}[_bck4_up]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck4_down() {
-    sudo umount --verbose "/run/timeshift/backup"
-    $__script_root/__bck4-down.sh &&
-        _info "${TXT_COLOR_GREEN}[_bck4_down]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck7_timeshift() {
-    $__script_root/__bck7-up.sh &&
-        sudo timeshift --create --comments "note: $1" --snapshot-device 10b8f361-2861-4c1d-98c7-08673758f700 &&
-        sync -f &&
-        _bck_timeshift_clean &&
-        sudo timeshift --list --snapshot-device 10b8f361-2861-4c1d-98c7-08673758f700 &&
-        sudo umount --verbose "/run/timeshift/backup" &&
-        $__script_root/__bck7-down.sh &&
-        _info "${TXT_COLOR_GREEN}[_bck7_timeshift]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck7_up() {
-    $__script_root/__bck7-up.sh &&
-        _info "${TXT_COLOR_GREEN}[_bck7_up]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck7_down() {
-    sudo umount --verbose "/run/timeshift/backup"
-    $__script_root/__bck7-down.sh &&
-        _info "${TXT_COLOR_GREEN}[_bck7_down]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck_timeshift_clean() {
-    sudo $__script_root/go/bin/capetown0 bck timeshift clean --retain-count=11 &&
-        _info "${TXT_COLOR_GREEN}[_bck_timeshift_clean]${TXT_COLOR_NONE}: all done"
-    return 0
-}
-
-function _bck_timeshift_regular() {
-    _bck7_timeshift "regular - $(date)"
-    _bck4_timeshift "regular - $(date)"
-    return 0
-}
-
 function _upgrade_pkgs() {
     sudo apt-get update && sudo apt-get check
     if [ $? -ne 0 ]; then

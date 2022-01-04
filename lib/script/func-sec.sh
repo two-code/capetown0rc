@@ -99,7 +99,7 @@ function c0rc_secret_get() {
         return 1
     fi
 
-    if [ ! "$stdout" = "y" ]; then
+    if [ "$stdout" = "y" ]; then
         echo -n $secret_decrypted
     else
         echo -n $secret_decrypted | xsel -ib
