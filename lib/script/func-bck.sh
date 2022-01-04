@@ -14,7 +14,7 @@ function c0rc_bck_warn() {
 }
 
 function c0rc_bck_ok() {
-    c0rc_bck_info "... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+    c0rc_bck_info "$C0RC_OP_OK"
     return 0
 }
 
@@ -76,23 +76,25 @@ function c0rc_bck_init_params() {
 
     last_up_mark_file="${mnt_path}/.last-up.txt"
 
-    c0rc_bck_info "backup device params:"
-    echo -e "\tbackend_device_rel: ${TXT_COLOR_YELLOW}${backend_device_rel}${TXT_COLOR_NONE}"
-    echo -e "\tbackend_device: ${TXT_COLOR_YELLOW}${backend_device}${TXT_COLOR_NONE}"
-    echo -e "\tbck_name: ${TXT_COLOR_YELLOW}${bck_name}${TXT_COLOR_NONE}"
-    echo -e "\tencryption_key: ${TXT_COLOR_YELLOW}${encryption_key}${TXT_COLOR_NONE}"
-    echo -e "\tencryption_mapper_full: ${TXT_COLOR_YELLOW}${encryption_mapper_full}${TXT_COLOR_NONE}"
-    echo -e "\tencryption_mapper_name: ${TXT_COLOR_YELLOW}${encryption_mapper_name}${TXT_COLOR_NONE}"
-    echo -e "\theader_decrypted: ${TXT_COLOR_YELLOW}${header_decrypted}${TXT_COLOR_NONE}"
-    echo -e "\theader: ${TXT_COLOR_YELLOW}${header}${TXT_COLOR_NONE}"
-    echo -e "\tintegrity_key_decrypted: ${TXT_COLOR_YELLOW}${integrity_key_decrypted}${TXT_COLOR_NONE}"
-    echo -e "\tintegrity_key: ${TXT_COLOR_YELLOW}${integrity_key}${TXT_COLOR_NONE}"
-    echo -e "\tintegrity_mapper_full: ${TXT_COLOR_YELLOW}${integrity_mapper_full}${TXT_COLOR_NONE}"
-    echo -e "\tintegrity_mapper_name: ${TXT_COLOR_YELLOW}${integrity_mapper_name}${TXT_COLOR_NONE}"
-    echo -e "\tlast_up_mark_file: ${TXT_COLOR_YELLOW}${last_up_mark_file}${TXT_COLOR_NONE}"
-    echo -e "\tmnt_path: ${TXT_COLOR_YELLOW}${mnt_path}${TXT_COLOR_NONE}"
-    echo -e "\tpartition_label: ${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}"
-    echo -e "\tramfs_mnt_path: ${TXT_COLOR_YELLOW}${ramfs_mnt_path}${TXT_COLOR_NONE}"
+    if [ "$C0RC_BCK_OUTPUT_INIT_PARAMS" = "y" ]; then
+        c0rc_bck_info "backup device params:"
+        echo -e "\tbackend_device_rel: ${TXT_COLOR_YELLOW}${backend_device_rel}${TXT_COLOR_NONE}"
+        echo -e "\tbackend_device: ${TXT_COLOR_YELLOW}${backend_device}${TXT_COLOR_NONE}"
+        echo -e "\tbck_name: ${TXT_COLOR_YELLOW}${bck_name}${TXT_COLOR_NONE}"
+        echo -e "\tencryption_key: ${TXT_COLOR_YELLOW}${encryption_key}${TXT_COLOR_NONE}"
+        echo -e "\tencryption_mapper_full: ${TXT_COLOR_YELLOW}${encryption_mapper_full}${TXT_COLOR_NONE}"
+        echo -e "\tencryption_mapper_name: ${TXT_COLOR_YELLOW}${encryption_mapper_name}${TXT_COLOR_NONE}"
+        echo -e "\theader_decrypted: ${TXT_COLOR_YELLOW}${header_decrypted}${TXT_COLOR_NONE}"
+        echo -e "\theader: ${TXT_COLOR_YELLOW}${header}${TXT_COLOR_NONE}"
+        echo -e "\tintegrity_key_decrypted: ${TXT_COLOR_YELLOW}${integrity_key_decrypted}${TXT_COLOR_NONE}"
+        echo -e "\tintegrity_key: ${TXT_COLOR_YELLOW}${integrity_key}${TXT_COLOR_NONE}"
+        echo -e "\tintegrity_mapper_full: ${TXT_COLOR_YELLOW}${integrity_mapper_full}${TXT_COLOR_NONE}"
+        echo -e "\tintegrity_mapper_name: ${TXT_COLOR_YELLOW}${integrity_mapper_name}${TXT_COLOR_NONE}"
+        echo -e "\tlast_up_mark_file: ${TXT_COLOR_YELLOW}${last_up_mark_file}${TXT_COLOR_NONE}"
+        echo -e "\tmnt_path: ${TXT_COLOR_YELLOW}${mnt_path}${TXT_COLOR_NONE}"
+        echo -e "\tpartition_label: ${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}"
+        echo -e "\tramfs_mnt_path: ${TXT_COLOR_YELLOW}${ramfs_mnt_path}${TXT_COLOR_NONE}"
+    fi
 
     return 0
 }
@@ -126,7 +128,7 @@ function c0rc_bck_close() {
     # }}}
 
     # unmount device {{{
-    c0rc_bck_info "unmount luks device: ..."
+    c0rc_bck_info "unmount luks device: $C0RC_OP_PROGRESS"
 
     sudo sync -f
     if [ $? -ne 0 ]; then
@@ -137,29 +139,29 @@ function c0rc_bck_close() {
     if [ $? -ne 0 ]; then
         c0rc_bck_warn "error while unmounting luks device"
     else
-        c0rc_bck_info "unmount luks device: ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+        c0rc_bck_info "unmount luks device: $C0RC_OP_OK"
     fi
     # }}}
 
     # luks device {{{
-    c0rc_bck_info "close luks device: ..."
+    c0rc_bck_info "close luks device: $C0RC_OP_PROGRESS"
 
     sudo cryptsetup close $encryption_mapper_name
     if [ $? -ne 0 ]; then
         c0rc_bck_warn "error while closing luks device"
     else
-        c0rc_bck_info "close luks device: ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+        c0rc_bck_info "close luks device: $C0RC_OP_OK"
     fi
     # }}}
 
     # integrity device {{{
-    c0rc_bck_info "close integrity device: ..."
+    c0rc_bck_info "close integrity device: $C0RC_OP_PROGRESS"
 
     sudo integritysetup close "$integrity_mapper_name"
     if [ $? -ne 0 ]; then
         c0rc_bck_warn "error while closing integrity device"
     else
-        c0rc_bck_info "close integrity device: ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+        c0rc_bck_info "close integrity device: $C0RC_OP_OK"
     fi
     # }}}
 
@@ -205,7 +207,7 @@ function c0rc_bck_open() {
     fi
 
     # integrity device {{{
-    c0rc_bck_info "open integrity device: ..."
+    c0rc_bck_info "open integrity device: $C0RC_OP_PROGRESS"
 
     sudo mount -t ramfs ramfs "$ramfs_mnt_path" &&
         sudo chown vitalik:vitalik "$ramfs_mnt_path" &&
@@ -234,11 +236,11 @@ function c0rc_bck_open() {
         return 1
     fi
 
-    c0rc_bck_info "open integrity device: ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+    c0rc_bck_info "open integrity device: $C0RC_OP_OK"
     # }}}
 
     # luks device {{{
-    c0rc_bck_info "open luks device: ..."
+    c0rc_bck_info "open luks device: $C0RC_OP_PROGRESS"
 
     c0rc_gpg_decrypt_to "$header" "$header_decrypted"
     if [ $? -ne 0 ]; then
@@ -255,11 +257,11 @@ function c0rc_bck_open() {
         return 1
     fi
 
-    c0rc_bck_info "open luks device: ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+    c0rc_bck_info "open luks device: $C0RC_OP_OK"
     # }}}
 
     # mount {{{
-    c0rc_bck_info "mount luks device: ..."
+    c0rc_bck_info "mount luks device: $C0RC_OP_PROGRESS"
 
     sudo mount -t $C0RC_BCK_VOLUME_DEFAULT_FS "$encryption_mapper_full" "$mnt_path"
     if [ $? -ne 0 ]; then
@@ -275,7 +277,7 @@ function c0rc_bck_open() {
         return 1
     fi
 
-    c0rc_bck_info "mount luks device: ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+    c0rc_bck_info "mount luks device: $C0RC_OP_OK"
     # }}}
 
     # unmount ramfs {{{
@@ -410,13 +412,13 @@ function c0rc_bck_run_insensitive_to() {
     local save_loc_full=$(realpath $save_loc)
     for dir_to_remove in $(find ./insensitive -mindepth 1 -maxdepth 1 -type d | xargs realpath); do
         if [ ! "$save_loc_full" = "$dir_to_remove" ]; then
-            c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': ..."
+            c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
             sudo chattr -i -R "$dir_to_remove"
             sudo rm -fdr "$dir_to_remove"
             if [ $? -ne 0 ]; then
-                c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+                c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
             else
-                c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+                c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': $C0RC_OP_OK"
             fi
         fi
     done
@@ -461,13 +463,13 @@ function c0rc_bck_run_insensitive() {
 
     local has_fail='n'
     for trg in $(<<<$C0RC_BCK_INSENSITIVE_TARGETS); do
-        c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ..."
+        c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
         c0rc_bck_run_insensitive_to "$trg"
         if [ $? -ne 0 ]; then
             has_fail='y'
-            c0rc_bck_warn "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+            c0rc_bck_warn "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
         else
-            c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+            c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_OK"
         fi
     done
 
@@ -558,24 +560,24 @@ function c0rc_bck_run_system() {
     local succeeded_targets=''
     for trg in $(<<<$targets); do
         c0rc_splitter
-        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ..."
+        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
         c0rc_bck_run_system_to "$trg" "regular on $(date '+%Y-%m-%dT%H:%M:%S%z')"
         if [ $? -ne 0 ]; then
             has_fail='y'
             failed_targets="$failed_targets $trg"
-            c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+            c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
         else
             succeeded_targets="$succeeded_targets $trg"
-            c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+            c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_OK"
         fi
     done
 
     c0rc_splitter
     for trg in $(<<<$succeeded_targets); do
-        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_OK"
     done
     for trg in $(<<<$failed_targets); do
-        c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+        c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
     done
 
     if [ "$has_fail" = 'n' ]; then
@@ -601,7 +603,7 @@ function c0rc_bck_run_regular() {
     local succeeded_kinds=''
     for knd in $(<<<$kinds); do
         c0rc_splitter
-        c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ..."
+        c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
 
         local knd_status=1
         if [ "$knd" = "$C0RC_BCK_KIND_INSENSITIVE" ]; then
@@ -615,19 +617,19 @@ function c0rc_bck_run_regular() {
         if [ $knd_status -ne 0 ]; then
             has_fail='y'
             failed_kinds="$failed_kinds $knd"
-            c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+            c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
         else
             succeeded_kinds="$succeeded_kinds $knd"
-            c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+            c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_OK"
         fi
     done
 
     c0rc_splitter
     for knd in $(<<<$succeeded_kinds); do
-        c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+        c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_OK"
     done
     for knd in $(<<<$failed_kinds); do
-        c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': ... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+        c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
     done
 
     if [ "$has_fail" = 'n' ]; then

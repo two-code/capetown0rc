@@ -8,6 +8,12 @@ export TXT_COLOR_NONE="${TXT_COLOR_NONE:-\033[0m}"
 export TXT_SPLITTER="${TXT_SPLITTER:---------------------------------------------------------------------------------}"
 export TXT_SPLITTER_COLOR="${TXT_SPLITTER_COLOR:-\033[38;5;147m}"
 
+# op status {{{
+export readonly C0RC_OP_PROGRESS="..."
+export readonly C0RC_OP_OK="... ${TXT_COLOR_GREEN}OK${TXT_COLOR_NONE}"
+export readonly C0RC_OP_FAIL="... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
+# }}}
+
 # gpg {{{
 export C0RC_GPG_UID="${C0RC_GPG_UID:-me@vitalik-malkin.email}"
 export C0RC_GPG_KID="${C0RC_GPG_KID:-9e3fc240cbe6345d79a2ba91757b48c7d9de7823}"
@@ -34,6 +40,8 @@ export GDK_DPI_SCALE=1.0
 # backup {{{
 export readonly C0RC_BCK_KIND_SYSTEM="system"
 export readonly C0RC_BCK_KIND_INSENSITIVE="insensitive"
+
+export C0RC_BCK_OUTPUT_INIT_PARAMS="n"
 
 export C0RC_BCK_VOLUME_DEFAULT_FS="${C0RC_BCK_VOLUME_DEFAULT_FS:-ext4}"
 
