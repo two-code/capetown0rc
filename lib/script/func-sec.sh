@@ -77,13 +77,13 @@ function c0rc_secret_get() {
         return 1
     fi
 
-    local secret_decrypted="$(c0rc_gpg_decrypt "$secret_file")"
+    local secret_decrypted="$(c0rc_gpg_decrypt "$secret_file" | sed -z -r 's/\n$//g')"
     if [ $? -ne 0 ]; then
         c0rc_err "error while decrypting secret"
         return 1
     fi
 
-    xsel -ib <<<$secret_decrypted
+    echo -n $secret_decrypted | xsel -ib
     if [ $? -ne 0 ]; then
         c0rc_err "error while putting secret into clipboard"
         return 1
@@ -105,37 +105,63 @@ function c0rc_secret_set() {
     fi
 
     local secret_name="$1"
+    local secret_out_file="$C0RC_SECRETS_DIR/$(basenc --base32hex <<<$secret_name)"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while encoding secret name"
+        return 1
+    elif [ -e $secret_out_file ]; then
+        c0rc_err "such secret name '${TXT_COLOR_YELLOW}$secret_name${TXT_COLOR_NONE}' already in use; that secret stores in '${TXT_COLOR_YELLOW}$secret_out_file${TXT_COLOR_NONE}' file"
+        return 1
+    fi
+
+    local secret_in_file=$(mktemp)
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while creating tmp file"
+        rm -f $secret_in_file
+        return 1
+    fi
+
+    c0rc_info "edit your secret with text editor (kwrite)..."
+    local secret_edit_status=1
+    kwrite "$secret_in_file" &>/dev/null && secret_edit_status=$?
+
+    if [ $secret_edit_status -ne 0 ]; then
+        c0rc_err "secret text editor has returned non-zero exit code"
+        rm -f $secret_in_file
+        return 1
+    elif [ $(stat --printf="%s" "$secret_in_file") -eq 0 ]; then
+        c0rc_warn "secret content have zero length; nothing to save"
+        rm -f $secret_in_file
+        return 0
+    fi
+
+    c0rc_info "encrypt and writeout your secret to '${TXT_COLOR_YELLOW}$secret_out_file${TXT_COLOR_NONE}'"
+    c0rc_gpg_encrypt_to "$secret_in_file" "$secret_out_file"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while encrypting secret"
+        rm -f $secret_in_file
+        return 1
+    else
+        c0rc_ok
+        rm -f $secret_in_file
+        return 0
+    fi
+}
+
+function c0rc_secret_file_get() {
+    if [ $# -ne 1 ]; then
+        c0rc_err "one argument specifying secret name expected"
+        return 1
+    fi
+
+    local secret_name="$1"
     local secret_file="$C0RC_SECRETS_DIR/$(basenc --base32hex <<<$secret_name)"
     if [ $? -ne 0 ]; then
         c0rc_err "error while encoding secret name"
         return 1
-    elif [ -e $secret_file ]; then
-        c0rc_err "such secret name '${TXT_COLOR_YELLOW}$secret_name${TXT_COLOR_NONE}' already in use"
-        return 1
     fi
 
-    local secret_tmp_file=""
-    trap [ ! -z $secret_tmp_file ] && [ -e $secret_tmp_file ] && rm -f $secret_tmp_file && c0rc_info "tmp file '${TXT_COLOR_YELLOW}$secret_tmp_file${TXT_COLOR_YELLOW}' removed" RETURN
-    secret_tmp_file=$(mktemp)
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while creating tmp file"
-        return 1
-    fi
+    print "$secret_file"
 
-    if [ ! kwrite "$secret_tmp_file" ] &>/dev/null; then
-        c0rc_err "secret text editor has returned non-zero exit code"
-        return 1
-    elif [ $(stat --printf="%s" "$secret_tmp_file") -eq 0 ]; then
-        c0rc_warn "secret temp file have zero length; nothing to save in secrets"
-        return 0
-    fi
-
-    c0rc_gpg --encrypt --output "$secret_file" <$secret_tmp_file
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while encrypting secret"
-        return 1
-    else
-        c0rc_ok
-        return 0
-    fi
+    return 0
 }

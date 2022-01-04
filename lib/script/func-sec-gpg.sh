@@ -15,7 +15,7 @@ function c0rc_gpg_decrypt_to() {
 
     c0rc_gpg -u "${C0RC_GPG_KID}" -r "${C0RC_GPG_UID}" --output "$2" --decrypt "$1"
     if [ $? -ne 0 ]; then
-        c0rc_err "error while gpg secret decryption"
+        c0rc_err "error while executing gpg decryption"
         return 1
     fi
 
@@ -30,7 +30,22 @@ function c0rc_gpg_decrypt() {
 
     c0rc_gpg -u "${C0RC_GPG_KID}" -r "${C0RC_GPG_UID}" --decrypt "$1"
     if [ $? -ne 0 ]; then
-        c0rc_err "error while gpg secret decryption"
+        c0rc_err "error while executing gpg decryption"
+        return 1
+    fi
+
+    return 0
+}
+
+function c0rc_gpg_encrypt_to() {
+    if [ $# -ne 2 ]; then
+        c0rc_bck_err "two arguments specifying input and output expected"
+        return 1
+    fi
+
+    c0rc_gpg -u "${C0RC_GPG_KID}" -r "${C0RC_GPG_UID}" --output "$2" --encrypt "$1"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while executing gpg encryption"
         return 1
     fi
 
