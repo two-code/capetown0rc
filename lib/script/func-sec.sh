@@ -512,22 +512,22 @@ function c0rc_luks_init_params() {
     partition_label="${container_name}-vault"
     local backend_device_rel=$(readlink "/dev/disk/by-partlabel/$partition_label")
     if [ $? -ne 0 ]; then
-        c0rc_err "error while resolving disk by backup partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}'"
+        c0rc_err "error while resolving disk by partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}'"
         return 1
     elif [ -z "$backend_device_rel" ]; then
-        c0rc_err "backup partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}' resolved to empty disk path"
+        c0rc_err "partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}' resolved to empty disk path"
         return 1
     fi
     backend_device="/dev/$(basename $backend_device_rel)"
     if [ $? -ne 0 ]; then
-        c0rc_err "error while resolving disk by backup partition label '${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}'"
+        c0rc_err "error while resolving disk by partition label '${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}'"
         return 1
     fi
 
     last_up_mark_file="${mount_point}/.last-up.txt"
 
     if [ "$C0RC_LUKS_OUTPUT_INIT_PARAMS" = "y" ]; then
-        c0rc_info "backup device params:"
+        c0rc_info "luks container params:"
         echo -e "\tbackend_device_rel: ${TXT_COLOR_YELLOW}${backend_device_rel}${TXT_COLOR_NONE}"
         echo -e "\tbackend_device: ${TXT_COLOR_YELLOW}${backend_device}${TXT_COLOR_NONE}"
         echo -e "\tcontainer_name: ${TXT_COLOR_YELLOW}${container_name}${TXT_COLOR_NONE}"
@@ -952,26 +952,6 @@ function c0rc_luks_init() {
     return 0
 }
 
-function c0rc_secv_open() {
-    c0rc_info "setup loop device: $C0RC_OP_PROGRESS"
-    sudo losetup -P /dev/$C0RC_SECV_LOOP_NAME "$C0RC_SECV_IMG"
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while setting up loop device"
-        return 1
-    fi
-    c0rc_info "setup loop device: $C0RC_OP_OK"
-
-    c0rc_info "open luks container '${TXT_COLOR_YELLOW}$C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
-    c0rc_luks_open --container_name="$C0RC_SECV_LUKS_CONTAINER_NAME" --mount_point="$C0RC_WS_SECV_DIR"
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while opening container"
-        return 1
-    fi
-    c0rc_info "open luks container '${TXT_COLOR_YELLOW}$C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}': $C0RC_OP_OK"
-
-    return 0
-}
-
 function c0rc_secv_close() {
     c0rc_info "close luks container '${TXT_COLOR_YELLOW}$C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
     c0rc_luks_close --container_name="$C0RC_SECV_LUKS_CONTAINER_NAME" --mount_point="$C0RC_WS_SECV_DIR"
@@ -988,6 +968,27 @@ function c0rc_secv_close() {
     else
         c0rc_info "detach loop device ('${TXT_COLOR_YELLOW}/dev/$C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}'): $C0RC_OP_OK"
     fi
+
+    return 0
+}
+
+function c0rc_secv_open() {
+    c0rc_info "setup loop device: $C0RC_OP_PROGRESS"
+    sudo losetup -P /dev/$C0RC_SECV_LOOP_NAME "$C0RC_SECV_IMG"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while setting up loop device"
+        return 1
+    fi
+    c0rc_info "setup loop device: $C0RC_OP_OK"
+
+    c0rc_info "open luks container '${TXT_COLOR_YELLOW}$C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+    c0rc_luks_open --container_name="$C0RC_SECV_LUKS_CONTAINER_NAME" --mount_point="$C0RC_WS_SECV_DIR"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while opening container"
+        c0rc_secv_close
+        return 1
+    fi
+    c0rc_info "open luks container '${TXT_COLOR_YELLOW}$C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}': $C0RC_OP_OK"
 
     return 0
 }
