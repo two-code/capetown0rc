@@ -1,3 +1,103 @@
+function c0rc_dir_unseal() {
+    if [ $# -ne 1 ]; then
+        c0rc_err "one argument specifying dir expected"
+        return 1
+    fi
+
+    local dir="$1"
+    local msg_prologue="unsealing dir '${TXT_COLOR_YELLOW}$dir${TXT_COLOR_NONE}':"
+
+    c0rc_info "$msg_prologue $C0RC_OP_PROGRESS"
+
+    sudo chattr -i "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while unsetting imuutability attribute"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    sudo chmod u+w "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while unsetting permissions"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    c0rc_info "$msg_prologue $C0RC_OP_OK"
+
+    return 0
+}
+
+function c0rc_dir_seal() {
+    if [ $# -ne 1 ]; then
+        c0rc_err "one argument specifying dir expected"
+        return 1
+    fi
+
+    local dir="$1"
+    local msg_prologue="sealing dir '${TXT_COLOR_YELLOW}$dir${TXT_COLOR_NONE}':"
+
+    c0rc_info "$msg_prologue $C0RC_OP_PROGRESS"
+
+    sudo chattr -i -R "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while unsetting imuutability attribute"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    sudo chown vitalik:vitalik -R "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while setting owner"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    sudo chmod a-rwx -R "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while unsetting permissions"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    sudo chmod u+rx -R "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while setting user read+exec permissions"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    sudo chattr +i -R "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while setting imuutability attribute"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    c0rc_info "$msg_prologue $C0RC_OP_OK"
+
+    return 0
+}
+
+function c0rc_secrets_2fa_dir_seal() {
+    c0rc_dir_seal "$C0RC_SECRETS_DIR"
+    c0rc_dir_seal "$C0RC_2FA_DIR"
+
+    return 0
+}
+
+function c0rc_secrets_dir_seal() {
+    c0rc_dir_seal "$C0RC_SECRETS_DIR"
+
+    return 0
+}
+
+function c0rc_secrets_dir_unseal() {
+    c0rc_dir_unseal "$C0RC_SECRETS_DIR"
+
+    return 0
+}
+
 function c0rc_otp_material() {
     if [ $# -ne 1 ]; then
         c0rc_bck_err "one argument specifying otp name expected"
@@ -196,16 +296,19 @@ function c0rc_secret_set() {
     fi
 
     c0rc_info "encrypt and writeout your secret to '${TXT_COLOR_YELLOW}$secret_out_file${TXT_COLOR_NONE}'"
+    c0rc_secrets_dir_unseal
     c0rc_gpg_encrypt_to "$secret_in_file" "$secret_out_file"
     if [ $? -ne 0 ]; then
         c0rc_err "error while encrypting secret"
         rm -f $secret_in_file
         return 1
-    else
-        c0rc_ok
-        rm -f $secret_in_file
-        return 0
     fi
+    c0rc_secrets_dir_seal
+
+    rm -f $secret_in_file
+    c0rc_ok
+
+    return 0
 }
 
 function c0rc_secret_file_get() {
@@ -347,64 +450,6 @@ function c0rc_secv_legacy_close() {
     # }}}
 
     c0rc_ok
-
-    return 0
-}
-
-function c0rc_dir_seal() {
-    if [ $# -ne 1 ]; then
-        c0rc_err "one argument specifying dir expected"
-        return 1
-    fi
-
-    local dir="$1"
-    local msg_prologue="sealing dir '${TXT_COLOR_YELLOW}$dir${TXT_COLOR_NONE}':"
-
-    c0rc_info "$msg_prologue $C0RC_OP_PROGRESS"
-
-    sudo chattr -i -R "$dir"
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while unsetting imuutability attribute"
-        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
-        return 1
-    fi
-
-    sudo chown vitalik:vitalik -R "$dir"
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while setting owner"
-        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
-        return 1
-    fi
-
-    sudo chmod a-rwx -R "$dir"
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while unsetting permissions"
-        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
-        return 1
-    fi
-
-    sudo chmod u+rx -R "$dir"
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while setting user read+exec permissions"
-        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
-        return 1
-    fi
-
-    sudo chattr +i -R "$dir"
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while setting imuutability attribute"
-        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
-        return 1
-    fi
-
-    c0rc_info "$msg_prologue $C0RC_OP_OK"
-
-    return 0
-}
-
-function c0rc_secret_2fa_seal() {
-    c0rc_dir_seal "$C0RC_SECRETS_DIR"
-    c0rc_dir_seal "$C0RC_2FA_DIR"
 
     return 0
 }
