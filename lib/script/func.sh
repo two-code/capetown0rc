@@ -18,6 +18,7 @@ function c0rc_env() {
     printenv |
         grep -i -E '^C0RC' |
         LC_ALL=C sort |
+        sed -r "s/^([^=]+)=(.+)$/\1 = $(echo -n $TXT_COLOR_YELLOW | sed 's/\\/\\\\/')\2$(echo -n $TXT_COLOR_NONE | sed 's/\\/\\\\/')/g" |
         cat -n -
 
     c0rc_splitter
@@ -25,5 +26,6 @@ function c0rc_env() {
     set |
         grep -i -E '^C0RC' |
         LC_ALL=C sort |
+        sed -r "s/^([^=]+)=(.+)$/\1 = $(echo -n $TXT_COLOR_YELLOW | sed 's/\\/\\\\/')\2$(echo -n $TXT_COLOR_NONE | sed 's/\\/\\\\/')/g" |
         cat -n -
 }

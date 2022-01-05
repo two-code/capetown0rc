@@ -100,7 +100,7 @@ function c0rc_secrets_dir_unseal() {
 
 function c0rc_otp_material() {
     if [ $# -ne 1 ]; then
-        c0rc_bck_err "one argument specifying otp name expected"
+        c0rc_err "one argument specifying otp name expected"
         return 1
     fi
 
@@ -115,7 +115,7 @@ function c0rc_otp_material() {
 
 function c0rc_otp() {
     if [ $# -ne 1 ]; then
-        c0rc_bck_err "one argument specifying otp name expected"
+        c0rc_err "one argument specifying otp name expected"
         return 1
     fi
 
@@ -221,7 +221,7 @@ function c0rc_secret_get() {
 
     if [ ! "$stdout" = "y" ]; then
         if ! command -v xsel &>/dev/null; then
-            c0rc_bck_err "no command '${TXT_COLOR_YELLOW}xsel${TXT_COLOR_NONE}' available; possibly, you need to install it"
+            c0rc_err "no command '${TXT_COLOR_YELLOW}xsel${TXT_COLOR_NONE}' available; possibly, you need to install it"
             return 1
         fi
     fi
@@ -261,7 +261,7 @@ function c0rc_secret_set() {
     fi
 
     if ! command -v kwrite &>/dev/null; then
-        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}kwrite${TXT_COLOR_NONE}' available; possibly, you need to install it"
+        c0rc_err "no command '${TXT_COLOR_YELLOW}kwrite${TXT_COLOR_NONE}' available; possibly, you need to install it"
         return 1
     fi
 
@@ -452,4 +452,88 @@ function c0rc_secv_legacy_close() {
     c0rc_ok
 
     return 0
+}
+
+function c0rc_luks_init_params() {
+    if [ $# -ne 1 ]; then
+        c0rc_err "one argument specifying luks container name expected"
+        return 1
+    fi
+
+    container_name="$1"
+    if [ -z $container_name ]; then
+        c0rc_err "no backup name specified"
+        return 1
+    fi
+
+    mount_point="/mnt/$container_name"
+
+    ramfs_mount_point="/mnt/ramfs_$(c0rc_hash_default "${C0RC_SHELL_SALT}_$container_name")"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while generating ram-fs mount point"
+        return 1
+    fi
+
+    integrity_key="${C0RC_SECRETS_DIR}/${container_name}-ikey.gpg"
+    integrity_key_decrypted="${ramfs_mount_point}/${container_name}-ikey"
+    integrity_mapper_name="${container_name}_int"
+    integrity_mapper_full="/dev/mapper/${integrity_mapper_name}"
+
+    encryption_key="${C0RC_SECRETS_DIR}/${container_name}-key.gpg"
+    encryption_mapper_name="${container_name}_enc"
+    encryption_mapper_full="/dev/mapper/${encryption_mapper_name}"
+
+    header="${C0RC_SECRETS_DIR}/${container_name}-header.gpg"
+    header_decrypted="${ramfs_mount_point}/${container_name}-header"
+
+    partition_label="${container_name}-vault"
+    local backend_device_rel=$(readlink "/dev/disk/by-partlabel/$partition_label")
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while resolving disk by backup partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}'"
+        return 1
+    elif [ -z "$backend_device_rel" ]; then
+        c0rc_err "backup partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}' resolved to empty disk path"
+        return 1
+    fi
+    backend_device="/dev/$(basename $backend_device_rel)"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while resolving disk by backup partition label '${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
+    last_up_mark_file="${mount_point}/.last-up.txt"
+
+    if [ "$C0RC_BCK_OUTPUT_INIT_PARAMS" = "y" ]; then
+        c0rc_info "backup device params:"
+        echo -e "\tbackend_device_rel: ${TXT_COLOR_YELLOW}${backend_device_rel}${TXT_COLOR_NONE}"
+        echo -e "\tbackend_device: ${TXT_COLOR_YELLOW}${backend_device}${TXT_COLOR_NONE}"
+        echo -e "\tcontainer_name: ${TXT_COLOR_YELLOW}${container_name}${TXT_COLOR_NONE}"
+        echo -e "\tencryption_key: ${TXT_COLOR_YELLOW}${encryption_key}${TXT_COLOR_NONE}"
+        echo -e "\tencryption_mapper_full: ${TXT_COLOR_YELLOW}${encryption_mapper_full}${TXT_COLOR_NONE}"
+        echo -e "\tencryption_mapper_name: ${TXT_COLOR_YELLOW}${encryption_mapper_name}${TXT_COLOR_NONE}"
+        echo -e "\theader_decrypted: ${TXT_COLOR_YELLOW}${header_decrypted}${TXT_COLOR_NONE}"
+        echo -e "\theader: ${TXT_COLOR_YELLOW}${header}${TXT_COLOR_NONE}"
+        echo -e "\tintegrity_key_decrypted: ${TXT_COLOR_YELLOW}${integrity_key_decrypted}${TXT_COLOR_NONE}"
+        echo -e "\tintegrity_key: ${TXT_COLOR_YELLOW}${integrity_key}${TXT_COLOR_NONE}"
+        echo -e "\tintegrity_mapper_full: ${TXT_COLOR_YELLOW}${integrity_mapper_full}${TXT_COLOR_NONE}"
+        echo -e "\tintegrity_mapper_name: ${TXT_COLOR_YELLOW}${integrity_mapper_name}${TXT_COLOR_NONE}"
+        echo -e "\tlast_up_mark_file: ${TXT_COLOR_YELLOW}${last_up_mark_file}${TXT_COLOR_NONE}"
+        echo -e "\tmount_point: ${TXT_COLOR_YELLOW}${mount_point}${TXT_COLOR_NONE}"
+        echo -e "\tpartition_label: ${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}"
+        echo -e "\tramfs_mount_point: ${TXT_COLOR_YELLOW}${ramfs_mount_point}${TXT_COLOR_NONE}"
+    fi
+
+    return 0
+}
+
+function c0rc_luks_init() {
+
+}
+
+function c0rc_luks_open() {
+
+}
+
+function c0rc_luks_close() {
+
 }
