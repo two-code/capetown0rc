@@ -329,7 +329,7 @@ function c0rc_secret_file_get() {
 }
 
 function c0rc_secret_ls() {
-    for secret_file in $(find "$C0RC_SECRETS_DIR" -maxdepth 1 -iname "*$C0RC_PLAIN_TEXT_SECRET_FILE_NAME_EXT" -type f); do
+    for secret_file in $(find "$C0RC_SECRETS_DIR" -maxdepth 1 -iname "*$C0RC_PLAIN_TEXT_SECRET_FILE_NAME_EXT" -type f | LC_ALL=C sort); do
         local secret_file_base_name=$(basename "$secret_file")
 
         local secret_name="$(c0rc_secret_file_name_to_name "$secret_file_base_name")"
