@@ -527,6 +527,11 @@ function c0rc_bck_run_system_to() {
         return 1
     fi
 
+    if [ -d "$C0RC_WS_SECV_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_SECV_DIR")" ]; then
+        c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_SECV_DIR${TXT_COLOR_NONE}' not empty; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
     local bck_device_uuid=""
     c0rc_bck_open "$bck_target" bck_device_uuid
     if [ $? -ne 0 ]; then
