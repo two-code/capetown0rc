@@ -70,7 +70,18 @@ export C0RC_SECRETS_GPG_DIR="${C0RC_SECRETS_GPG_DIR:-"$C0RC_SECRETS_DIR/gpg"}"
 export C0RC_2FA_DIR="${C0RC_2FA_DIR:-"$HOME/.2fa"}"
 
 export C0RC_SECV_LEGACY_IMG="${C0RC_SECV_LEGACY_IMG:-"$HOME/.secv-legacy/image.img"}"
-export C0RC_SECV_IMG="${C0RC_SECV_IMG:-"$HOME/.secv.img"}"
+
+export C0RC_SECV_IMG="${C0RC_SECV_IMG:-}"
+if [ -z $C0RC_SECV_IMG ]; then
+    if [ "$(hostname)" = "capetown0" ]; then
+        C0RC_SECV_IMG="$HOME/.secv-c0.img"
+    elif [ "$(hostname)" = "capetown2" ]; then
+        C0RC_SECV_IMG="$HOME/.secv-c2.img"
+    else
+        C0RC_SECV_IMG=""
+        echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_IMG${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+    fi
+fi
 
 export C0RC_GPG_UID="${C0RC_GPG_UID:-me@vitalik-malkin.email}"
 export C0RC_GPG_KID="${C0RC_GPG_KID:-9e3fc240cbe6345d79a2ba91757b48c7d9de7823}"

@@ -11,3 +11,19 @@
 . $C0RC_SCRIPT_DIR/func-sec.sh
 . $C0RC_SCRIPT_DIR/func-srch.sh
 . $C0RC_SCRIPT_DIR/func-ssh-gpg.sh
+
+function c0rc_env() {
+    c0rc_splitter
+    c0rc_info "environment:"
+    printenv |
+        grep -i -E '^C0RC' |
+        LC_ALL=C sort |
+        cat -n -
+
+    c0rc_splitter
+    c0rc_info "params:"
+    set |
+        grep -i -E '^C0RC' |
+        LC_ALL=C sort |
+        cat -n -
+}
