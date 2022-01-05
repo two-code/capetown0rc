@@ -509,6 +509,8 @@ function c0rc_luks_init_params() {
     header="${C0RC_SECRETS_DIR}/${container_name}-header.gpg"
     header_raw="${ramfs_mount_point}/${container_name}-header"
 
+    ll /dev/disk/by-partlabel
+
     partition_label="${container_name}-vault"
     local backend_device_rel=$(readlink "/dev/disk/by-partlabel/$partition_label")
     if [ $? -ne 0 ]; then
@@ -749,7 +751,7 @@ function c0rc_luks_open() {
     # }}}
 
     # output info {{{
-    c0rc_info "previous up '${TXT_COLOR_YELLOW}$(sudo cat "$last_up_mark_file" || echo -n '<no data>')'${TXT_COLOR_NONE}"
+    c0rc_info "previous up '${TXT_COLOR_YELLOW}$(sudo cat "$last_up_mark_file" 2>/dev/null || echo -n '<no data>')'${TXT_COLOR_NONE}"
     date '+%Y-%m-%dT%H:%M:%S%z, %A %b %d, %s' | sudo tee $last_up_mark_file >/dev/null
     if [ $? -ne 0 ]; then
         c0rc_warn "error while writing out mark of device up"
@@ -973,10 +975,19 @@ function c0rc_secv_close() {
 }
 
 function c0rc_secv_open() {
-    c0rc_info "setup loop device: $C0RC_OP_PROGRESS"
-    sudo losetup -P /dev/$C0RC_SECV_LOOP_NAME "$C0RC_SECV_IMG"
+    c0rc_info "setup loop device '${TXT_COLOR_YELLOW}/dev/$C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+    sudo losetup --direct-io=on -P /dev/$C0RC_SECV_LOOP_NAME "$C0RC_SECV_IMG"
     if [ $? -ne 0 ]; then
         c0rc_err "error while setting up loop device"
+        c0rc_secv_close
+        return 1
+    fi
+    c0rc_info "some pause needed $C0RC_OP_PROGRESS"
+    sleep 5
+    sudo partx -u - /dev/$C0RC_SECV_LOOP_NAME
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while setting up loop device"
+        c0rc_secv_close
         return 1
     fi
     c0rc_info "setup loop device: $C0RC_OP_OK"
