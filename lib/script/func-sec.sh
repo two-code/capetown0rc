@@ -239,3 +239,114 @@ function c0rc_secret_ls() {
 
     return 0
 }
+
+function c0rc_secv_legacy_open() {
+    local mount_point="$C0RC_WS_SECV_LEGACY_DIR"
+    local loop_device="/dev/loop3000"
+    local loop_img="$C0RC_SECV_LEGACY_IMG"
+    local mapper_name="secv-legacy"
+    local mapper_name_full="/dev/mapper/$mapper_name"
+    local last_up_mark_file="$mount_point/.last-up.txt"
+    local encryption_key="$C0RC_SECRETS_DIR/secv-legacy-key.gpg"
+
+    # mount point(s) {{{
+    sudo mkdir -p "$mount_point" &&
+        sudo chown vitalik:vitalik "$mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while creating and tuning mount point '${TXT_COLOR_YELLOW}$mount_point${TXT_COLOR_NONE}'"
+        return 1
+    fi
+    # }}}
+
+    # loop device {{{
+    sudo losetup $loop_device $loop_img
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while setup loop device"
+        return 1
+    fi
+    # }}}
+
+    # luks device {{{
+    c0rc_gpg_decrypt "$encryption_key" |
+        sudo cryptsetup --key-file=- --key-slot=$C0RC_LUKS_DEFAULT_KEYSLOT --perf-no_read_workqueue --perf-no_write_workqueue --persistent luksOpen $loop_device $mapper_name
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while opening luks device"
+        c0rc_secv_legacy_close
+        return 1
+    fi
+    # }}}
+
+    # mount {{{
+    sudo mount $mapper_name_full "$mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while mounting luks device"
+        c0rc_secv_legacy_close
+        return 1
+    fi
+
+    sudo chown vitalik:vitalik "$mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while tuning permissions/ownership for luks device's file system root"
+        c0rc_secv_legacy_close
+        return 1
+    fi
+    # }}}
+
+    # output info {{{
+    c0rc_info "previous up '${TXT_COLOR_YELLOW}$(sudo cat "$last_up_mark_file" || echo -n '<no data>')'${TXT_COLOR_NONE}"
+    date '+%Y-%m-%dT%H:%M:%S%z, %A %b %d, %s' | sudo tee $last_up_mark_file >/dev/null
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while writing out mark of device up"
+    fi
+
+    local luks_device_uuid_loc=$(lsblk -dn -o UUID $mapper_name_full)
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while getting luks device uuid"
+        c0rc_secv_legacy_close
+        return 1
+    fi
+
+    c0rc_info "luks device uuid '${TXT_COLOR_YELLOW}$luks_device_uuid_loc${TXT_COLOR_NONE}'"
+    c0rc_info "mount point '${TXT_COLOR_YELLOW}$mount_point${TXT_COLOR_NONE}'"
+    # }}}
+
+    c0rc_ok
+
+    return 0
+}
+
+function c0rc_secv_legacy_close() {
+    local mount_point="$C0RC_WS_SECV_LEGACY_DIR"
+    local loop_device="/dev/loop3000"
+    local mapper_name="secv-legacy"
+
+    # unmount {{{
+    sudo sync -f
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while syncing fs"
+    fi
+
+    sudo umount "$mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while unmounting luks device"
+    fi
+    # }}}
+
+    # luks device {{{
+    sudo cryptsetup close $mapper_name
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while closing luks device"
+    fi
+    # }}}
+
+    # loop device {{{
+    sudo losetup -d $loop_device
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while closing loop device"
+    fi
+    # }}}
+
+    c0rc_ok
+
+    return 0
+}

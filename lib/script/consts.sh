@@ -69,6 +69,8 @@ export C0RC_SECRETS_DIR="${C0RC_SECRETS_DIR:-"$HOME/.secrets"}"
 export C0RC_SECRETS_GPG_DIR="${C0RC_SECRETS_GPG_DIR:-"$C0RC_SECRETS_DIR/gpg"}"
 export C0RC_2FA_DIR="${C0RC_2FA_DIR:-"$HOME/.2fa"}"
 
+export C0RC_SECV_LEGACY_IMG="${C0RC_SECV_LEGACY_IMG:-"$HOME/.secv-legacy/image.img"}"
+
 export C0RC_GPG_UID="${C0RC_GPG_UID:-me@vitalik-malkin.email}"
 export C0RC_GPG_KID="${C0RC_GPG_KID:-9e3fc240cbe6345d79a2ba91757b48c7d9de7823}"
 export C0RC_GPG_VERBOSE="${C0RC_GPG_VERBOSE:-n}"
@@ -99,6 +101,8 @@ export C0RC_WS_DIR="${C0RC_WS_DIR:-"$HOME/workspace"}"
 
 export C0RC_WS_BCK_DIR="${C0RC_WS_BCK_DIR:-"$C0RC_WS_DIR/_backup"}"
 export C0RC_WS_BCK_OSSETTINGS_DIR="${C0RC_WS_BCK_OSSETTINGS_DIR:-"$C0RC_WS_BCK_DIR/os-settings"}"
+
+export C0RC_WS_SECV_LEGACY_DIR="${C0RC_WS_SECV_LEGACY_DIR:-"$C0RC_WS_DIR/_secv-legacy"}"
 
 export C0RC_WS_DOCS_DIR="${C0RC_WS_DOCS_DIR:-"$C0RC_WS_DIR/_docs"}"
 export C0RC_WS_DOCS_ENC_DIR="${C0RC_WS_DOCS_ENC_DIR:-"$C0RC_WS_DIR/_docs_secured"}"
