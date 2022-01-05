@@ -1,6 +1,7 @@
 . $C0RC_SCRIPT_DIR/func-apt.sh
 . $C0RC_SCRIPT_DIR/func-bck.sh
 . $C0RC_SCRIPT_DIR/func-docs.sh
+. $C0RC_SCRIPT_DIR/func-fonts.sh
 . $C0RC_SCRIPT_DIR/func-git.sh
 . $C0RC_SCRIPT_DIR/func-kde-plasma.sh
 . $C0RC_SCRIPT_DIR/func-ramfs.sh
