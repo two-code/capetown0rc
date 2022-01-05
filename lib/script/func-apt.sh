@@ -48,24 +48,113 @@ function c0rc_apt_dump_installed_pkgs() {
     return 0
 }
 
-function c0rc_apt_upgrade_pkgs() {
+function c0rc_apt_upgradable_pkgs_names() {
+    local exclude_hold=""
+    if [ $# -eq 1 ]; then
+        if [ "$1" = "y" ]; then
+            exclude_hold="y"
+        elif [ "$1" = "n" ]; then
+            exclude_hold="n"
+        else
+            c0rc_err "value of arg [ exclude_hold ] is out of range: 'y' or 'n' expected"
+            return 1
+        fi
+    elif [ $# -ne 0 ]; then
+        c0rc_err "one or zero args expected: [ exclude_hold ]"
+        return 1
+    else
+        exclude_hold="y"
+    fi
+
+    local upgradable_pkgs=$(sudo \
+        apt \
+        list --upgradable 2>/dev/null |
+        LC_ALL=C sed 's/Listing\.\.\.//g' |
+        LC_ALL=C sed '/^[[:space:]]*$/d' |
+        LC_ALL=C sed -r 's/^([^[:space:]]+).*$/\1/g' |
+        LC_ALL=C sed -r 's/^([^\/]*)\/.*$/\1/g' |
+        LC_ALL=C sort)
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while constructing list of upgradable pkgs (see msgs above)"
+        return 1
+    fi
+
+    if [ "$exclude_hold" = "n" ]; then
+        echo $upgradable_pkgs
+        return 0
+    fi
+
+    local hold_pkgs_file=$(mktemp)
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while creating tmp file"
+        return 1
+    fi
+
+    local upgradable_pkgs_file=$(mktemp)
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while creating tmp file"
+        rm -f $hold_pkgs_file
+        return 1
+    fi
+    echo $upgradable_pkgs >$upgradable_pkgs_file
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while constructing list of upgradable pkgs (see msgs above)"
+        rm -f $hold_pkgs_file
+        rm -f $upgradable_pkgs_file
+        return 1
+    fi
+
+    sudo apt-mark showhold | LC_ALL=C sort >$hold_pkgs_file
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while constructing list of hold pkgs (see msgs above)"
+        rm -f $hold_pkgs_file
+        rm -f $upgradable_pkgs_file
+        return 1
+    fi
+
+    LC_ALL=C comm -3 $upgradable_pkgs_file $hold_pkgs_file
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while comparing list of pkgs"
+        rm -f $hold_pkgs_file
+        rm -f $upgradable_pkgs_file
+        return 1
+    fi
+
+    rm -f $hold_pkgs_file
+    rm -f $upgradable_pkgs_file
+
+    return 0
+}
+
+function c0rc_apt_upgrade() {
     sudo apt-get update && sudo apt-get check
     if [ $? -ne 0 ]; then
         c0rc_err "error while updating and checking packages"
         return 1
     fi
 
-    local non_kali_pkgs=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^((?!kali|openrazer|python3-openrazer|sublime-merge).*)\// && print "$1 "')
-    if [ -n "$non_kali_pkgs" ]; then
-        c0rc_info "non-kali packages:\n$non_kali_pkgs"
+    local unhold_upgradable_pkgs=$(c0rc_apt_upgradable_pkgs_names)
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while build upgradable pkgs list names (excluding held pkgs)"
+        return 1
+    fi
 
-        c0rc_info "non-kali upgrade: $C0RC_OP_PROGRESS"
+    if [ -n "$unhold_upgradable_pkgs" ]; then
+        c0rc_info "without 'hold' mark packages:\n$(echo $unhold_upgradable_pkgs | cat -n -)"
+
+        c0rc_info "no 'hold' upgrade: $C0RC_OP_PROGRESS"
         while true; do
-            local pkgs_part=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^((?!kali|openrazer|python3-openrazer|sublime-merge).*)\// && print "$1\n"' | head -n 20 | tr '\n' ' ')
+            local pkgs_part=$(c0rc_apt_upgradable_pkgs_names)
+            if [ $? -ne 0 ]; then
+                c0rc_err "error while build upgradable pkgs list names"
+                return 1
+            fi
+            local pkgs_part=$(echo $pkgs_part | head -n 30 | tr '\n' ' ')
+
             if [ -n "$pkgs_part" ]; then
                 c0rc_splitter
-                c0rc_info "upgrade part:\n$pkgs_part"
-                sudo apt-get -y install $(echo -n $pkgs_part)
+                c0rc_info "upgrade part:\n$(echo $pkgs_part | cat -n -)"
+                sudo apt-get -y "$@" install $(echo -n $pkgs_part)
                 if [ $? -ne 0 ]; then
                     c0rc_err "error while upgrading packages (see msgs above)"
                     return 1
@@ -73,14 +162,19 @@ function c0rc_apt_upgrade_pkgs() {
 
                 continue
             fi
+
             break
         done
-        c0rc_info "non-kali upgrade: $C0RC_OP_OK"
+        c0rc_splitter
+        c0rc_info "no 'hold' upgrade: $C0RC_OP_OK"
     fi
 
-    local kali_pkgs=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^((kali|openrazer|python3-openrazer|sublime-merge).*)\// && print "$1 "')
-    if [ -n "$kali_pkgs" ]; then
-        c0rc_warn "upgradable kali packages:\n$kali_pkgs"
+    local upgradable_pkgs=$(c0rc_apt_upgradable_pkgs_names n)
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while build upgradable pkgs list names"
+        return 1
+    elif [ -n "$upgradable_pkgs" ]; then
+        c0rc_warn "upgradable packages:\n$(echo $upgradable_pkgs | cat -n -)"
     fi
 
     c0rc_ok
