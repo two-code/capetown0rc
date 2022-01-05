@@ -78,7 +78,7 @@ function c0rc_apt_upgrade_pkgs() {
         c0rc_info "non-kali upgrade: $C0RC_OP_OK"
     fi
 
-    local kali_pkgs=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^(kali|openrazer|python3-openrazer|sublime-merge.*)\// && print "$1 "')
+    local kali_pkgs=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^((kali|openrazer|python3-openrazer|sublime-merge).*)\// && print "$1 "')
     if [ -n "$kali_pkgs" ]; then
         c0rc_warn "upgradable kali packages:\n$kali_pkgs"
     fi
