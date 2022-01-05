@@ -980,9 +980,15 @@ function c0rc_secv_open() {
         c0rc_secv_close
         return 1
     fi
-    c0rc_info "some pause needed $C0RC_OP_PROGRESS"
-    sleep 5
-    sudo partx -u - /dev/$C0RC_SECV_LOOP_NAME
+    # c0rc_info "some pause needed (7 secs) $C0RC_OP_PROGRESS"
+    # sleep 7
+    # sudo partx -u - /dev/$C0RC_SECV_LOOP_NAME
+    # if [ $? -ne 0 ]; then
+    #     c0rc_err "error while setting up loop device"
+    #     c0rc_secv_close
+    #     return 1
+    # fi
+    sudo partprobe
     if [ $? -ne 0 ]; then
         c0rc_err "error while setting up loop device"
         c0rc_secv_close
