@@ -28,6 +28,8 @@ function c0rc_timeshift_mount_try_unmount() {
 }
 
 function c0rc_bck_init_params() {
+    # need to be removed when c0rc_luks_open/c0rc_luks_close will be used
+    #
     if [ $# -ne 1 ]; then
         c0rc_bck_err "one argument specifying backup name expected"
         return 1
@@ -100,6 +102,8 @@ function c0rc_bck_init_params() {
 }
 
 function c0rc_bck_close() {
+    # use c0rc_luks_close
+    #
     if [ $# -ne 1 ]; then
         c0rc_bck_err "one argument specifying backup name expected"
         return 1
@@ -169,6 +173,8 @@ function c0rc_bck_close() {
 }
 
 function c0rc_bck_open() {
+    # use c0rc_luks_open
+    #
     if [ $# -lt 1 ]; then
         c0rc_bck_err "one argument specifying backup name expected"
         return 1

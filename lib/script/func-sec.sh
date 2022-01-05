@@ -698,7 +698,7 @@ function c0rc_luks_open() {
     c0rc_gpg_decrypt_to "$header" "$header_raw"
     if [ $? -ne 0 ]; then
         c0rc_err "error while decrypting luks device header"
-        c0rc_luks_close "$container_name"
+        c0rc_luks_close --container_name="$container_name" --mount_point="$mount_point"
         return 1
     fi
 
@@ -713,7 +713,7 @@ function c0rc_luks_open() {
             luksOpen $integrity_mapper_full $encryption_mapper_name
     if [ $? -ne 0 ]; then
         c0rc_err "error while opening luks device"
-        c0rc_luks_close "$container_name"
+        c0rc_luks_close --container_name="$container_name" --mount_point="$mount_point"
         return 1
     fi
 
@@ -726,14 +726,14 @@ function c0rc_luks_open() {
     sudo mount -t $C0RC_BCK_VOLUME_DEFAULT_FS "$encryption_mapper_full" "$mount_point"
     if [ $? -ne 0 ]; then
         c0rc_err "error while mounting luks device"
-        c0rc_luks_close "$container_name"
+        c0rc_luks_close --container_name="$container_name" --mount_point="$mount_point"
         return 1
     fi
 
     sudo chown vitalik:vitalik "$mount_point"
     if [ $? -ne 0 ]; then
         c0rc_err "error while tuning permissions/ownership for luks device's file system root"
-        c0rc_luks_close "$container_name"
+        c0rc_luks_close --container_name="$container_name" --mount_point="$mount_point"
         return 1
     fi
 
@@ -758,14 +758,14 @@ function c0rc_luks_open() {
     local luks_device_uuid_loc=$(lsblk -dn -o UUID "$encryption_mapper_full")
     if [ $? -ne 0 ]; then
         c0rc_err "error while getting luks device uuid"
-        c0rc_luks_close "$container_name"
+        c0rc_luks_close --container_name="$container_name" --mount_point="$mount_point"
         return 1
     fi
 
     c0rc_info "luks device uuid '${TXT_COLOR_YELLOW}$luks_device_uuid_loc${TXT_COLOR_NONE}'"
 
-    if [ $# -eq 2 ]; then
-        eval "$2=$luks_device_uuid_loc"
+    if [ ! -z "$container_uuid_out" ]; then
+        eval "$container_uuid_out=$luks_device_uuid_loc"
     fi
     # }}}
 
@@ -944,7 +944,7 @@ function c0rc_luks_init() {
     # }}}
 
     # close created container {{{
-    c0rc_luks_close $container_name
+    c0rc_luks_close --container_name="$container_name" --mount_point="$mount_point"
     # }}}
 
     c0rc_ok
@@ -961,19 +961,33 @@ function c0rc_secv_open() {
     fi
     c0rc_info "setup loop device: $C0RC_OP_OK"
 
+    c0rc_info "open luks container '${TXT_COLOR_YELLOW}$C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+    c0rc_luks_open --container_name="$C0RC_SECV_LUKS_CONTAINER_NAME" --mount_point="$C0RC_WS_SECV_DIR"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while opening container"
+        return 1
+    fi
+    c0rc_info "open luks container '${TXT_COLOR_YELLOW}$C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}': $C0RC_OP_OK"
+
     return 0
 }
 
 function c0rc_secv_close() {
-    # ...
+    c0rc_info "close luks container '${TXT_COLOR_YELLOW}$C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+    c0rc_luks_close --container_name="$C0RC_SECV_LUKS_CONTAINER_NAME" --mount_point="$C0RC_WS_SECV_DIR"
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while closing container"
+    else
+        c0rc_info "close luks container '${TXT_COLOR_YELLOW}$C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}': $C0RC_OP_OK"
+    fi
 
     c0rc_info "detach loop device ('${TXT_COLOR_YELLOW}/dev/$C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}'): $C0RC_OP_PROGRESS"
     sudo losetup -v -d /dev/$C0RC_SECV_LOOP_NAME
     if [ $? -ne 0 ]; then
         c0rc_warn "error while detaching loop device"
-        return 1
+    else
+        c0rc_info "detach loop device ('${TXT_COLOR_YELLOW}/dev/$C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}'): $C0RC_OP_OK"
     fi
-    c0rc_info "detach loop device ('${TXT_COLOR_YELLOW}/dev/$C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}'): $C0RC_OP_OK"
 
     return 0
 }
