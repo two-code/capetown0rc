@@ -169,6 +169,8 @@ function c0rc_apt_upgrade() {
         done
         c0rc_splitter
         c0rc_info "non-held upgrade: $C0RC_OP_OK"
+    else
+        c0rc_info "no non-held pkgs to upgrade"
     fi
 
     local upgradable_pkgs=$(c0rc_apt_upgradable_pkgs_names n)
@@ -176,7 +178,7 @@ function c0rc_apt_upgrade() {
         c0rc_err "error while build upgradable pkgs list names"
         return 1
     elif [ -n "$upgradable_pkgs" ]; then
-        c0rc_warn "rest of upgradable packages:\n$(echo $upgradable_pkgs | cat -n)"
+        c0rc_warn "rest of upgradable pkgs (${TXT_COLOR_WARN}possibly, these pkgs is held${TXT_COLOR_NONE}):\n$(echo $upgradable_pkgs | cat -n)"
     fi
 
     c0rc_ok

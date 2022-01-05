@@ -3,7 +3,7 @@ function c0rc_err() {
 }
 
 function c0rc_warn() {
-    echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} $*" >&2
+    echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} $*" >&2
 }
 
 function c0rc_info() {

@@ -5,6 +5,7 @@ export TXT_COLOR_RED="${TXT_COLOR_RED:-\033[1;31m}"
 export TXT_COLOR_GREEN="${TXT_COLOR_GREEN:-\033[0;32m}"
 export TXT_COLOR_CYAN="${TXT_COLOR_CYAN:-\033[0;36m}"
 export TXT_COLOR_NONE="${TXT_COLOR_NONE:-\033[0m}"
+export TXT_COLOR_WARN="${TXT_COLOR_WARN:-$TXT_COLOR_ORANGE}"
 export TXT_SPLITTER="${TXT_SPLITTER:---------------------------------------------------------------------------------}"
 export TXT_SPLITTER_COLOR="${TXT_SPLITTER_COLOR:-\033[38;5;147m}"
 
