@@ -127,11 +127,13 @@ function c0rc_apt_upgradable_pkgs_names() {
 }
 
 function c0rc_apt_upgrade() {
+    c0rc_info "update and check: $C0RC_OP_PROGRESS"
     sudo apt-get update && sudo apt-get check
     if [ $? -ne 0 ]; then
         c0rc_err "error while updating and checking packages"
         return 1
     fi
+    c0rc_info "update and check: $C0RC_OP_OK"
 
     local unhold_upgradable_pkgs=$(c0rc_apt_upgradable_pkgs_names)
     if [ $? -ne 0 ]; then
@@ -140,25 +142,25 @@ function c0rc_apt_upgrade() {
     fi
 
     if [ -n "$unhold_upgradable_pkgs" ]; then
-        c0rc_info "without 'hold' mark packages:\n$(echo $unhold_upgradable_pkgs | cat -n -)"
+        c0rc_info "non-held pkgs:\n$(echo $unhold_upgradable_pkgs | cat -n)"
 
-        c0rc_info "no 'hold' upgrade: $C0RC_OP_PROGRESS"
+        c0rc_info "non-held upgrade: $C0RC_OP_PROGRESS"
+        ((offset = 1))
+        ((part_size = 23))
+        ((part_num = 1))
         while true; do
-            local pkgs_part=$(c0rc_apt_upgradable_pkgs_names)
-            if [ $? -ne 0 ]; then
-                c0rc_err "error while build upgradable pkgs list names"
-                return 1
-            fi
-            local pkgs_part=$(echo $pkgs_part | head -n 30 | tr '\n' ' ')
-
+            local pkgs_part=$(echo $unhold_upgradable_pkgs | tail -n +"$offset" | head -n "$part_size" | tr '\n' ' ')
             if [ -n "$pkgs_part" ]; then
                 c0rc_splitter
-                c0rc_info "upgrade part:\n$(echo $pkgs_part | cat -n -)"
+                c0rc_info "upgrade part $part_num:\n$(echo $pkgs_part | cat -n)"
                 sudo apt-get -y "$@" install $(echo -n $pkgs_part)
                 if [ $? -ne 0 ]; then
                     c0rc_err "error while upgrading packages (see msgs above)"
                     return 1
                 fi
+
+                ((offset = offset + part_size))
+                ((part_num++))
 
                 continue
             fi
@@ -166,7 +168,7 @@ function c0rc_apt_upgrade() {
             break
         done
         c0rc_splitter
-        c0rc_info "no 'hold' upgrade: $C0RC_OP_OK"
+        c0rc_info "non-held upgrade: $C0RC_OP_OK"
     fi
 
     local upgradable_pkgs=$(c0rc_apt_upgradable_pkgs_names n)
@@ -174,7 +176,7 @@ function c0rc_apt_upgrade() {
         c0rc_err "error while build upgradable pkgs list names"
         return 1
     elif [ -n "$upgradable_pkgs" ]; then
-        c0rc_warn "upgradable packages:\n$(echo $upgradable_pkgs | cat -n -)"
+        c0rc_warn "rest of upgradable packages:\n$(echo $upgradable_pkgs | cat -n)"
     fi
 
     c0rc_ok
