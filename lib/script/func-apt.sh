@@ -55,13 +55,13 @@ function c0rc_apt_upgrade_pkgs() {
         return 1
     fi
 
-    local non_kali_pkgs=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^((?!kali).*)\// && print "$1 "')
+    local non_kali_pkgs=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^((?!kali|openrazer|python3-openrazer).*)\// && print "$1 "')
     if [ -n "$non_kali_pkgs" ]; then
         c0rc_info "non-kali packages:\n$non_kali_pkgs"
 
         c0rc_info "non-kali upgrade: $C0RC_OP_PROGRESS"
         while true; do
-            local pkgs_part=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^((?!kali).*)\// && print "$1\n"' | head -n 10 | tr '\n' ' ')
+            local pkgs_part=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^((?!kali|openrazer|python3-openrazer).*)\// && print "$1\n"' | head -n 20 | tr '\n' ' ')
             if [ -n "$pkgs_part" ]; then
                 c0rc_splitter
                 c0rc_info "upgrade part:\n$pkgs_part"
@@ -78,7 +78,7 @@ function c0rc_apt_upgrade_pkgs() {
         c0rc_info "non-kali upgrade: $C0RC_OP_OK"
     fi
 
-    local kali_pkgs=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^(kali.*)\// && print "$1 "')
+    local kali_pkgs=$(sudo apt list --upgradable 2>/dev/null | sort | perl -n -e'/^(kali|openrazer|python3-openrazer.*)\// && print "$1 "')
     if [ -n "$kali_pkgs" ]; then
         c0rc_warn "upgradable kali packages:\n$kali_pkgs"
     fi
