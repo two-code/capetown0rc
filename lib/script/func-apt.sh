@@ -178,7 +178,7 @@ function c0rc_apt_upgrade() {
         c0rc_err "error while build upgradable pkgs list names"
         return 1
     elif [ -n "$upgradable_pkgs" ]; then
-        c0rc_warn "rest of upgradable pkgs (${TXT_COLOR_WARN}possibly, these pkgs is held${TXT_COLOR_NONE}):\n$(echo $upgradable_pkgs | cat -n)"
+        c0rc_warn "rest of upgradable pkgs (${TXT_COLOR_WARN}possibly, these pkgs are held${TXT_COLOR_NONE}):\n$(echo $upgradable_pkgs | cat -n)"
     fi
 
     c0rc_ok
