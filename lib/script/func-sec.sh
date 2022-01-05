@@ -147,7 +147,7 @@ function c0rc_hash_default() {
         return 1
     fi
 
-    sha256 <<<$1 | xxd -p -c 32
+    sha256 <<<$1 | xxd -p -c 32 | head -c 12
     if [ $? -ne 0 ]; then
         c0rc_err "error while evaluating hash of specified string"
         return 1
@@ -453,20 +453,42 @@ function c0rc_secv_legacy_close() {
 
     return 0
 }
-
+# container_uuid_out
 function c0rc_luks_init_params() {
-    if [ $# -ne 1 ]; then
-        c0rc_err "one argument specifying luks container name expected"
+    while :; do
+        case $1 in
+        --mount_point=?*)
+            mount_point=${1#*=}
+            ;;
+        --container_name=?*)
+            container_name=${1#*=}
+            ;;
+        --container_uuid_out=?*)
+            container_uuid_out=${1#*=}
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -?*)
+            c0rc_err "unknown parameter '${TXT_COLOR_YELLOW}$1${TXT_COLOR_NONE}'"
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+        shift
+    done
+
+    if [ -z "$container_name" ]; then
+        c0rc_err "no container name specified; use '${TXT_COLOR_YELLOW}--container_name${TXT_COLOR_NONE}' parameter"
         return 1
     fi
 
-    container_name="$1"
-    if [ -z $container_name ]; then
-        c0rc_err "no backup name specified"
-        return 1
+    if [ -z "$mount_point" ]; then
+        mount_point="/mnt/$container_name"
     fi
-
-    mount_point="/mnt/$container_name"
 
     ramfs_mount_point="/mnt/ramfs_$(c0rc_hash_default "${C0RC_SHELL_SALT}_$container_name")"
     if [ $? -ne 0 ]; then
@@ -509,6 +531,7 @@ function c0rc_luks_init_params() {
         echo -e "\tbackend_device_rel: ${TXT_COLOR_YELLOW}${backend_device_rel}${TXT_COLOR_NONE}"
         echo -e "\tbackend_device: ${TXT_COLOR_YELLOW}${backend_device}${TXT_COLOR_NONE}"
         echo -e "\tcontainer_name: ${TXT_COLOR_YELLOW}${container_name}${TXT_COLOR_NONE}"
+        echo -e "\tcontainer_uuid_out: ${TXT_COLOR_YELLOW}${container_uuid_out}${TXT_COLOR_NONE}"
         echo -e "\tencryption_key_raw: ${TXT_COLOR_YELLOW}${encryption_key_raw}${TXT_COLOR_NONE}"
         echo -e "\tencryption_key: ${TXT_COLOR_YELLOW}${encryption_key}${TXT_COLOR_NONE}"
         echo -e "\tencryption_mapper_full: ${TXT_COLOR_YELLOW}${encryption_mapper_full}${TXT_COLOR_NONE}"
@@ -529,22 +552,10 @@ function c0rc_luks_init_params() {
 }
 
 function c0rc_luks_close() {
-
-}
-
-function c0rc_luks_open() {
-
-}
-
-function c0rc_luks_init_fail_clean() {
-
-}
-
-function c0rc_luks_init() {
-
     # init params {{{
     local backend_device=""
     local container_name=""
+    local container_uuid_out=""
     local encryption_key_raw=""
     local encryption_key=""
     local encryption_mapper_full=""
@@ -559,7 +570,234 @@ function c0rc_luks_init() {
     local mount_point=""
     local partition_label=""
     local ramfs_mount_point=""
-    c0rc_bck_init_params "$1"
+
+    c0rc_luks_init_params "$@"
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+    # }}}
+
+    # unmount device {{{
+    c0rc_info "unmount '${TXT_COLOR_YELLOW}$mount_point${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+
+    sudo sync -f
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while syncing fs"
+    fi
+
+    sudo umount "$mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while unmounting '${TXT_COLOR_YELLOW}$mount_point${TXT_COLOR_NONE}'"
+    else
+        c0rc_info "unmount '${TXT_COLOR_YELLOW}$mount_point${TXT_COLOR_NONE}': $C0RC_OP_OK"
+    fi
+    # }}}
+
+    # luks device {{{
+    c0rc_info "close luks device: $C0RC_OP_PROGRESS"
+
+    sudo cryptsetup close $encryption_mapper_name
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while closing luks device"
+    else
+        c0rc_info "close luks device: $C0RC_OP_OK"
+    fi
+    # }}}
+
+    # integrity device {{{
+    c0rc_info "close integrity device: $C0RC_OP_PROGRESS"
+
+    sudo integritysetup close "$integrity_mapper_name"
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while closing integrity device"
+    else
+        c0rc_info "close integrity device: $C0RC_OP_OK"
+    fi
+    # }}}
+
+    return 0
+
+}
+
+function c0rc_luks_open() {
+    # init params {{{
+    local backend_device=""
+    local container_name=""
+    local container_uuid_out=""
+    local encryption_key_raw=""
+    local encryption_key=""
+    local encryption_mapper_full=""
+    local encryption_mapper_name=""
+    local header_raw=""
+    local header=""
+    local integrity_key_raw=""
+    local integrity_key=""
+    local integrity_mapper_full=""
+    local integrity_mapper_name=""
+    local last_up_mark_file=""
+    local mount_point=""
+    local partition_label=""
+    local ramfs_mount_point=""
+
+    c0rc_luks_init_params "$@"
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+    # }}}
+
+    sudo mkdir -p "$mount_point" &&
+        sudo chown vitalik:vitalik "$mount_point" &&
+        sudo mkdir -p "$ramfs_mount_point" &&
+        sudo chown vitalik:vitalik "$ramfs_mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while creating and tuning mount points"
+        sudo rm -fdr "$ramfs_mount_point"
+        return 1
+    fi
+
+    # integrity device {{{
+    c0rc_info "open integrity device: $C0RC_OP_PROGRESS"
+
+    sudo mount -t ramfs ramfs "$ramfs_mount_point" &&
+        sudo chown vitalik:vitalik "$ramfs_mount_point" &&
+        sudo chmod a-rwx "$ramfs_mount_point" &&
+        sudo chmod u+rwx "$ramfs_mount_point"
+
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while mounting ramfs"
+        sudo rm -fdr "$ramfs_mount_point"
+        return 1
+    fi
+
+    c0rc_gpg_decrypt_to "$integrity_key" "$integrity_key_raw"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while decrypting integrity key"
+        sudo umount -f "$ramfs_mount_point" &&
+            sudo rm -fdr "$ramfs_mount_point"
+        return 1
+    fi
+
+    sudo integritysetup \
+        open "$backend_device" "$integrity_mapper_name" \
+        --integrity=hmac-sha256 \
+        --integrity-key-file="$integrity_key_raw" \
+        --integrity-key-size=32
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while opening integrity device"
+        sudo umount -f "$ramfs_mount_point" &&
+            sudo rm -fdr "$ramfs_mount_point"
+        return 1
+    fi
+
+    c0rc_info "open integrity device: $C0RC_OP_OK"
+    # }}}
+
+    # luks device {{{
+    c0rc_info "open luks device: $C0RC_OP_PROGRESS"
+
+    c0rc_gpg_decrypt_to "$header" "$header_raw"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while decrypting luks device header"
+        c0rc_luks_close "$container_name"
+        return 1
+    fi
+
+    c0rc_gpg_decrypt "$encryption_key" |
+        sudo cryptsetup \
+            --key-file=- \
+            --key-slot=$C0RC_LUKS_DEFAULT_KEYSLOT \
+            --header="$header_raw" \
+            --perf-no_read_workqueue \
+            --perf-no_write_workqueue \
+            --persistent \
+            luksOpen $integrity_mapper_full $encryption_mapper_name
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while opening luks device"
+        c0rc_luks_close "$container_name"
+        return 1
+    fi
+
+    c0rc_info "open luks device: $C0RC_OP_OK"
+    # }}}
+
+    # mount {{{
+    c0rc_info "mount luks device to '${TXT_COLOR_YELLOW}$mount_point${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+
+    sudo mount -t $C0RC_BCK_VOLUME_DEFAULT_FS "$encryption_mapper_full" "$mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while mounting luks device"
+        c0rc_luks_close "$container_name"
+        return 1
+    fi
+
+    sudo chown vitalik:vitalik "$mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while tuning permissions/ownership for luks device's file system root"
+        c0rc_luks_close "$container_name"
+        return 1
+    fi
+
+    c0rc_info "mount luks device: $C0RC_OP_OK"
+    # }}}
+
+    # unmount ramfs {{{
+    sudo umount -f "$ramfs_mount_point" &&
+        sudo rm -fdr "$ramfs_mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while unmounting ramfs"
+    fi
+    # }}}
+
+    # output info {{{
+    c0rc_info "previous up '${TXT_COLOR_YELLOW}$(sudo cat "$last_up_mark_file" || echo -n '<no data>')'${TXT_COLOR_NONE}"
+    date '+%Y-%m-%dT%H:%M:%S%z, %A %b %d, %s' | sudo tee $last_up_mark_file >/dev/null
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while writing out mark of device up"
+    fi
+
+    local luks_device_uuid_loc=$(lsblk -dn -o UUID "$encryption_mapper_full")
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while getting luks device uuid"
+        c0rc_luks_close "$container_name"
+        return 1
+    fi
+
+    c0rc_info "luks device uuid '${TXT_COLOR_YELLOW}$luks_device_uuid_loc${TXT_COLOR_NONE}'"
+
+    if [ $# -eq 2 ]; then
+        eval "$2=$luks_device_uuid_loc"
+    fi
+    # }}}
+
+    return 0
+}
+
+function c0rc_luks_init_fail_clean() {
+    c0rc_warn "c0rc_luks_init_fail_clean: not implemented yet"
+    return 0
+}
+
+function c0rc_luks_init() {
+    # init params {{{
+    local backend_device=""
+    local container_name=""
+    local container_uuid_out=""
+    local encryption_key_raw=""
+    local encryption_key=""
+    local encryption_mapper_full=""
+    local encryption_mapper_name=""
+    local header_raw=""
+    local header=""
+    local integrity_key_raw=""
+    local integrity_key=""
+    local integrity_mapper_full=""
+    local integrity_mapper_name=""
+    local last_up_mark_file=""
+    local mount_point=""
+    local partition_label=""
+    local ramfs_mount_point=""
+
+    C0RC_LUKS_OUTPUT_INIT_PARAMS=y c0rc_luks_init_params "$@"
     if [ $? -ne 0 ]; then
         return 1
     fi
@@ -710,6 +948,32 @@ function c0rc_luks_init() {
     # }}}
 
     c0rc_ok
+
+    return 0
+}
+
+function c0rc_secv_open() {
+    c0rc_info "setup loop device: $C0RC_OP_PROGRESS"
+    sudo losetup -P /dev/$C0RC_SECV_LOOP_NAME "$C0RC_SECV_IMG"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while setting up loop device"
+        return 1
+    fi
+    c0rc_info "setup loop device: $C0RC_OP_OK"
+
+    return 0
+}
+
+function c0rc_secv_close() {
+    # ...
+
+    c0rc_info "detach loop device ('${TXT_COLOR_YELLOW}/dev/$C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}'): $C0RC_OP_PROGRESS"
+    sudo losetup -v -d /dev/$C0RC_SECV_LOOP_NAME
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while detaching loop device"
+        return 1
+    fi
+    c0rc_info "detach loop device ('${TXT_COLOR_YELLOW}/dev/$C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}'): $C0RC_OP_OK"
 
     return 0
 }
