@@ -475,16 +475,17 @@ function c0rc_luks_init_params() {
     fi
 
     integrity_key="${C0RC_SECRETS_DIR}/${container_name}-ikey.gpg"
-    integrity_key_decrypted="${ramfs_mount_point}/${container_name}-ikey"
+    integrity_key_raw="${ramfs_mount_point}/${container_name}-ikey"
     integrity_mapper_name="${container_name}_int"
     integrity_mapper_full="/dev/mapper/${integrity_mapper_name}"
 
     encryption_key="${C0RC_SECRETS_DIR}/${container_name}-key.gpg"
+    encryption_key_raw="${ramfs_mount_point}/${container_name}-key"
     encryption_mapper_name="${container_name}_enc"
     encryption_mapper_full="/dev/mapper/${encryption_mapper_name}"
 
     header="${C0RC_SECRETS_DIR}/${container_name}-header.gpg"
-    header_decrypted="${ramfs_mount_point}/${container_name}-header"
+    header_raw="${ramfs_mount_point}/${container_name}-header"
 
     partition_label="${container_name}-vault"
     local backend_device_rel=$(readlink "/dev/disk/by-partlabel/$partition_label")
@@ -503,17 +504,18 @@ function c0rc_luks_init_params() {
 
     last_up_mark_file="${mount_point}/.last-up.txt"
 
-    if [ "$C0RC_BCK_OUTPUT_INIT_PARAMS" = "y" ]; then
+    if [ "$C0RC_LUKS_OUTPUT_INIT_PARAMS" = "y" ]; then
         c0rc_info "backup device params:"
         echo -e "\tbackend_device_rel: ${TXT_COLOR_YELLOW}${backend_device_rel}${TXT_COLOR_NONE}"
         echo -e "\tbackend_device: ${TXT_COLOR_YELLOW}${backend_device}${TXT_COLOR_NONE}"
         echo -e "\tcontainer_name: ${TXT_COLOR_YELLOW}${container_name}${TXT_COLOR_NONE}"
+        echo -e "\tencryption_key_raw: ${TXT_COLOR_YELLOW}${encryption_key_raw}${TXT_COLOR_NONE}"
         echo -e "\tencryption_key: ${TXT_COLOR_YELLOW}${encryption_key}${TXT_COLOR_NONE}"
         echo -e "\tencryption_mapper_full: ${TXT_COLOR_YELLOW}${encryption_mapper_full}${TXT_COLOR_NONE}"
         echo -e "\tencryption_mapper_name: ${TXT_COLOR_YELLOW}${encryption_mapper_name}${TXT_COLOR_NONE}"
-        echo -e "\theader_decrypted: ${TXT_COLOR_YELLOW}${header_decrypted}${TXT_COLOR_NONE}"
+        echo -e "\theader_raw: ${TXT_COLOR_YELLOW}${header_raw}${TXT_COLOR_NONE}"
         echo -e "\theader: ${TXT_COLOR_YELLOW}${header}${TXT_COLOR_NONE}"
-        echo -e "\tintegrity_key_decrypted: ${TXT_COLOR_YELLOW}${integrity_key_decrypted}${TXT_COLOR_NONE}"
+        echo -e "\tintegrity_key_raw: ${TXT_COLOR_YELLOW}${integrity_key_raw}${TXT_COLOR_NONE}"
         echo -e "\tintegrity_key: ${TXT_COLOR_YELLOW}${integrity_key}${TXT_COLOR_NONE}"
         echo -e "\tintegrity_mapper_full: ${TXT_COLOR_YELLOW}${integrity_mapper_full}${TXT_COLOR_NONE}"
         echo -e "\tintegrity_mapper_name: ${TXT_COLOR_YELLOW}${integrity_mapper_name}${TXT_COLOR_NONE}"
@@ -526,7 +528,7 @@ function c0rc_luks_init_params() {
     return 0
 }
 
-function c0rc_luks_init() {
+function c0rc_luks_close() {
 
 }
 
@@ -534,6 +536,180 @@ function c0rc_luks_open() {
 
 }
 
-function c0rc_luks_close() {
+function c0rc_luks_init_fail_clean() {
 
+}
+
+function c0rc_luks_init() {
+
+    # init params {{{
+    local backend_device=""
+    local container_name=""
+    local encryption_key_raw=""
+    local encryption_key=""
+    local encryption_mapper_full=""
+    local encryption_mapper_name=""
+    local header_raw=""
+    local header=""
+    local integrity_key_raw=""
+    local integrity_key=""
+    local integrity_mapper_full=""
+    local integrity_mapper_name=""
+    local last_up_mark_file=""
+    local mount_point=""
+    local partition_label=""
+    local ramfs_mount_point=""
+    c0rc_bck_init_params "$1"
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+    # }}}
+
+    # mounts {{{
+    sudo mkdir -p "$mount_point" &&
+        sudo chown vitalik:vitalik "$mount_point" &&
+        sudo mkdir -p "$ramfs_mount_point" &&
+        sudo chown vitalik:vitalik "$ramfs_mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while creating and tuning mount points"
+        sudo rm -fdr "$ramfs_mount_point"
+        return 1
+    fi
+    # }}}
+
+    # generate random data {{{
+    sudo dd if=/dev/urandom bs=32 count=1 of=$integrity_key_raw
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while generating integrity key"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+
+    sudo dd if=/dev/urandom bs=512 count=1 of=$encryption_key_raw
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while generating encryption key"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+
+    sudo dd if=/dev/zero bs=16777216 count=1 of=$header_raw
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while generating luks header"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+    # }}}
+
+    # integrity layer {{{
+    sudo integritysetup \
+        --debug \
+        format \
+        $backend_device \
+        --tag-size=32 \
+        --integrity=hmac-sha256 \
+        --integrity-key-file=$integrity_key_raw \
+        --integrity-key-size=32 \
+        --sector-size=4096
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while formatting integrity layer"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+
+    sudo integritysetup \
+        --debug open \
+        $backend_device \
+        $integrity_mapper_name \
+        --integrity=hmac-sha256 \
+        --integrity-key-file=$integrity_key_raw \
+        --integrity-key-size=32
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while opening integrity layer device"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+    # }}}
+
+    # luks layer {{{
+    sudo cryptsetup \
+        --debug \
+        luksFormat \
+        --cipher="capi:xts(twofish)-essiv:sha256" \
+        --key-size=256 \
+        --pbkdf=argon2id \
+        --iter-time=16000 \
+        --hash=sha512 \
+        --label=$partition_label \
+        --key-slot=$C0RC_LUKS_DEFAULT_KEYSLOT \
+        --use-urandom \
+        --key-file=$encryption_key_raw \
+        --header=$header_raw \
+        --sector-size=4096 \
+        $integrity_mapper_full
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while formatting luks layer"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+
+    sudo cryptsetup \
+        --debug \
+        luksOpen \
+        --key-slot=$C0RC_LUKS_DEFAULT_KEYSLOT \
+        --key-file=$encryption_key_raw \
+        --header=$header_raw \
+        $integrity_mapper_full \
+        $encryption_mapper_name
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while opening luks layer device"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+    # }}}
+
+    # file system {{{
+    sudo mkfs.$C0RC_LUKS_DEFAULT_FS -F -v $encryption_mapper_full
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while making file system on luks layer"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+
+    sudo mount -t $C0RC_LUKS_DEFAULT_FS $encryption_mapper_full $mount_point/
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while mounting created file system"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+
+    sudo sync -f
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while syncing fs"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+    # }}}
+
+    # encrypt and store credentials {{{
+    c0rc_secrets_dir_unseal
+
+    c0rc_gpg_encrypt_to "$integrity_key_raw" "$integrity_key" &&
+        c0rc_gpg_encrypt_to "$encryption_key_raw" "$encryption_key" &&
+        c0rc_gpg_encrypt_to "$header_raw" "$header"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while storing credentials"
+        c0rc_luks_init_fail_clean
+        return 1
+    fi
+
+    c0rc_secrets_dir_seal
+    # }}}
+
+    # close created container {{{
+    c0rc_luks_close $container_name
+    # }}}
+
+    c0rc_ok
+
+    return 0
 }
