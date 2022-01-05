@@ -509,8 +509,6 @@ function c0rc_luks_init_params() {
     header="${C0RC_SECRETS_DIR}/${container_name}-header.gpg"
     header_raw="${ramfs_mount_point}/${container_name}-header"
 
-    ll /dev/disk/by-partlabel
-
     partition_label="${container_name}-vault"
     local backend_device_rel=$(readlink "/dev/disk/by-partlabel/$partition_label")
     if [ $? -ne 0 ]; then
