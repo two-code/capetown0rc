@@ -386,47 +386,51 @@ function c0rc_bck_run_insensitive_to() {
 
     pushd $mount_point >/dev/null
     sudo mkdir -p $save_loc &&
-        sudo mkdir -p "$save_loc/root" &&
+        sudo mkdir -p "$save_loc/boot/grub" &&
         sudo mkdir -p "$save_loc/etc" &&
         sudo mkdir -p "$save_loc/etc/apt" &&
         sudo mkdir -p "$save_loc/etc/apt/sources.list.d" &&
+        sudo mkdir -p "$save_loc/etc/ssh" &&
+        sudo mkdir -p "$save_loc/home" &&
+        sudo mkdir -p "$save_loc/home/.gnupg" &&
+        sudo mkdir -p "$save_loc/home/workspace/_backup/os-settings" &&
+        sudo mkdir -p "$save_loc/root" &&
         sudo mkdir -p "$save_loc/usr/share/keyrings" &&
-        sudo mkdir -p "$save_loc/boot/grub/themes/kali" &&
-        sudo mkdir -p "$save_loc/workspace/_backup/os-settings" &&
-        sudo mkdir -p "$save_loc/.gnupg" &&
-        sudo cp -ar ~/workspace/_backup/os-settings "$save_loc/workspace/_backup/" &&
-        sudo cp -ar ~/workspace/corsair-keyboard.ckb "$save_loc/workspace/" &&
-        sudo cp -ar ~/workspace/logitech-default.gpfl "$save_loc/workspace/" &&
-        sudo cp -ar ~/workspace/my-ublock-* "$save_loc/workspace/" &&
-        sudo cp -ar ~/.gitconfig "$save_loc/" &&
-        sudo cp -ar ~/.clickhouse-client-history "$save_loc/" &&
-        sudo cp -ar ~/.capetown0rc "$save_loc/" &&
-        sudo cp -ar ~/.secrets "$save_loc/" &&
-        sudo cp -ar ~/.ssh "$save_loc/" &&
-        sudo cp -ar ~/.gnupg/gpg.conf "$save_loc/.gnupg/" &&
-        sudo cp -ar ~/.gnupg/gpgsm.conf "$save_loc/.gnupg/" &&
-        sudo cp -ar ~/.gnupg/gpg-agent.conf "$save_loc/.gnupg/" &&
-        sudo cp -ar ~/.gnupg/scdaemon.conf "$save_loc/.gnupg/" &&
-        sudo cp -ar ~/.gnupg/sshcontrol "$save_loc/.gnupg/" &&
-        sudo cp -ar ~/.2fa "$save_loc/" &&
-        sudo cp -ar ~/.zsh_history "$save_loc/" &&
-        sudo cp -ar ~/.zshrc "$save_loc/" &&
-        sudo cp -ar ~/.profile "$save_loc/" &&
+        sudo cp -ar ~/.2fa "$save_loc/home/" &&
+        sudo cp -ar ~/.capetown0rc "$save_loc/home/" &&
+        sudo cp -ar ~/.clickhouse-client-history "$save_loc/home/" &&
+        sudo cp -ar ~/.gitconfig "$save_loc/home/" &&
+        sudo cp -ar ~/.gnupg/gpg-agent.conf "$save_loc/home/.gnupg/" &&
+        sudo cp -ar ~/.gnupg/gpg.conf "$save_loc/home/.gnupg/" &&
+        sudo cp -ar ~/.gnupg/gpgsm.conf "$save_loc/home/.gnupg/" &&
+        sudo cp -ar ~/.gnupg/scdaemon.conf "$save_loc/home/.gnupg/" &&
+        sudo cp -ar ~/.gnupg/sshcontrol "$save_loc/home/.gnupg/" &&
+        sudo cp -ar ~/.profile "$save_loc/home/" &&
+        sudo cp -ar ~/.secrets "$save_loc/home/" &&
+        sudo cp -ar ~/.ssh "$save_loc/home/" &&
+        sudo cp -ar ~/.zsh_history "$save_loc/home/" &&
+        sudo cp -ar ~/.zshrc "$save_loc/home/" &&
+        sudo cp -ar ~/workspace/_backup/os-settings "$save_loc/home/workspace/_backup/" &&
+        sudo cp -ar ~/workspace/corsair-keyboard.ckb "$save_loc/home/workspace/" &&
+        sudo cp -ar ~/workspace/logitech-default.gpfl "$save_loc/home/workspace/" &&
+        sudo cp -ar ~/workspace/my-ublock-* "$save_loc/home/workspace/" &&
+        sudo cp -ar /boot/grub/themes "$save_loc/boot/grub/" &&
+        sudo cp -ar /etc/apt/sources.list "$save_loc/etc/apt/" &&
+        sudo cp -ar /etc/apt/sources.list.d "$save_loc/etc/apt/" &&
+        sudo cp -ar /etc/crypttab "$save_loc/etc/" &&
+        sudo cp -ar /etc/default "$save_loc/etc/" &&
+        sudo cp -ar /etc/environment "$save_loc/etc/" &&
+        sudo cp -ar /etc/fstab "$save_loc/etc/" &&
+        sudo cp -ar /etc/sddm "$save_loc/etc/" &&
+        sudo cp -ar /etc/sddm.conf "$save_loc/etc/" &&
+        sudo cp -ar /etc/sddm.conf.d "$save_loc/etc/" &&
+        sudo cp -ar /etc/ssh/ssh_config "$save_loc/etc/ssh/" &&
+        sudo cp -ar /etc/ssh/ssh_config.d "$save_loc/etc/ssh/" &&
+        sudo cp -ar /etc/ssh/sshd_config.d "$save_loc/etc/ssh/" &&
+        sudo cp -ar /root/.profile "$save_loc/root/" &&
         sudo cp -ar /root/.zsh_history "$save_loc/root/" &&
         sudo cp -ar /root/.zshrc "$save_loc/root/" &&
-        sudo cp -ar /root/.profile "$save_loc/root/" &&
-        sudo cp -ar /etc/environment "$save_loc/etc/" &&
-        sudo cp -ar /etc/ssh "$save_loc/etc/" &&
-        sudo cp -ar /etc/sddm "$save_loc/etc/" &&
-        sudo cp -ar /etc/sddm.conf.d "$save_loc/etc/" &&
-        sudo cp -ar /etc/sddm.conf "$save_loc/etc/" &&
-        sudo cp -ar /etc/apt/sources.list "$save_loc/etc/apt" &&
-        sudo cp -ar /etc/apt/sources.list.d "$save_loc/etc/apt" &&
-        sudo cp -ar /usr/share/keyrings "$save_loc/usr/share" &&
-        sudo cp -ar /etc/fstab "$save_loc/etc/" &&
-        sudo cp -ar /etc/crypttab "$save_loc/etc/" &&
-        sudo cp -ar /boot/grub/themes "$save_loc/boot/grub/themes" &&
-        sudo cp -ar /etc/default "$save_loc/etc/"
+        sudo cp -ar /usr/share/keyrings "$save_loc/usr/share"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while copying"
         popd >/dev/null
