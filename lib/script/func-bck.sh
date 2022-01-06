@@ -491,10 +491,8 @@ function c0rc_bck_run_insensitive() {
         if [ $? -ne 0 ]; then
             has_fail='y'
             failed_targets="$failed_targets $trg"
-            c0rc_bck_warn "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run insensitive backup: $C0RC_OP_FAIL"
         else
             succeeded_targets="$succeeded_targets $trg"
-            c0rc_bck_info "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run insensitive backup: $C0RC_OP_OK"
         fi
     done
 
@@ -627,16 +625,15 @@ function c0rc_bck_run_system() {
             c0rc_bck_warn "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run system backup: $C0RC_OP_FAIL"
         else
             succeeded_targets="$succeeded_targets $trg"
-            c0rc_bck_info "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run system backup: $C0RC_OP_OK"
         fi
     done
 
     c0rc_splitter
     for trg in $(<<<$succeeded_targets); do
-        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_OK"
+        c0rc_bck_info "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run system backup: $C0RC_OP_OK"
     done
     for trg in $(<<<$failed_targets); do
-        c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
+        c0rc_bck_warn "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run system backup: $C0RC_OP_FAIL"
     done
 
     if [ "$has_fail" = 'n' ]; then
@@ -676,10 +673,8 @@ function c0rc_bck_run_regular() {
         if [ $knd_status -ne 0 ]; then
             has_fail='y'
             failed_kinds="$failed_kinds $knd"
-            c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
         else
             succeeded_kinds="$succeeded_kinds $knd"
-            c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_OK"
         fi
     done
 
