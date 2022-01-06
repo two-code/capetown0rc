@@ -471,21 +471,39 @@ function c0rc_bck_run_insensitive_to() {
 }
 
 function c0rc_bck_run_insensitive() {
-    if [ $# -ne 0 ]; then
-        c0rc_bck_err "too many args; no args expected"
+    local targets=''
+    if [ $# -eq 1 ]; then
+        targets="$1"
+    elif [ $# -eq 0 ]; then
+        targets="$C0RC_BCK_INSENSITIVE_TARGETS"
+    else
+        c0rc_bck_err "too many args passed; only one argument allowed - specifying targets"
         return 1
     fi
 
     local has_fail='n'
-    for trg in $(<<<$C0RC_BCK_INSENSITIVE_TARGETS); do
-        c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+    local failed_targets=''
+    local succeeded_targets=''
+    for trg in $(<<<$targets); do
+        c0rc_splitter
+        c0rc_bck_info "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run insensitive backup: $C0RC_OP_PROGRESS"
         c0rc_bck_run_insensitive_to "$trg"
         if [ $? -ne 0 ]; then
             has_fail='y'
-            c0rc_bck_warn "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
+            failed_targets="$failed_targets $trg"
+            c0rc_bck_warn "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run insensitive backup: $C0RC_OP_FAIL"
         else
-            c0rc_bck_info "run insensitive backup to '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_OK"
+            succeeded_targets="$succeeded_targets $trg"
+            c0rc_bck_info "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run insensitive backup: $C0RC_OP_OK"
         fi
+    done
+
+    c0rc_splitter
+    for trg in $(<<<$succeeded_targets); do
+        c0rc_bck_info "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run insensitive backup: $C0RC_OP_OK"
+    done
+    for trg in $(<<<$failed_targets); do
+        c0rc_bck_warn "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run insensitive backup: $C0RC_OP_FAIL"
     done
 
     if [ "$has_fail" = 'n' ]; then
@@ -601,15 +619,15 @@ function c0rc_bck_run_system() {
     local succeeded_targets=''
     for trg in $(<<<$targets); do
         c0rc_splitter
-        c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+        c0rc_bck_info "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run system backup: $C0RC_OP_PROGRESS"
         c0rc_bck_run_system_to "$trg" "regular on $(date '+%Y-%m-%dT%H:%M:%S%z')"
         if [ $? -ne 0 ]; then
             has_fail='y'
             failed_targets="$failed_targets $trg"
-            c0rc_bck_warn "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
+            c0rc_bck_warn "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run system backup: $C0RC_OP_FAIL"
         else
             succeeded_targets="$succeeded_targets $trg"
-            c0rc_bck_info "run system backup; target '${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}': $C0RC_OP_OK"
+            c0rc_bck_info "[${TXT_COLOR_YELLOW}$trg${TXT_COLOR_NONE}]: run system backup: $C0RC_OP_OK"
         fi
     done
 
