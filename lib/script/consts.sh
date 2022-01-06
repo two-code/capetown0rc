@@ -32,7 +32,7 @@ export C0RC_BCK_VOLUME_DEFAULT_FS="${C0RC_BCK_VOLUME_DEFAULT_FS:-ext4}"
 export C0RC_BCK_INSENSITIVE_TARGETS="${C0RC_BCK_INSENSITIVE_TARGETS:-}"
 if [ -z $C0RC_BCK_INSENSITIVE_TARGETS ]; then
     if [ "$(hostname)" = "capetown0" ]; then
-        C0RC_BCK_INSENSITIVE_TARGETS="bck7-key bck4-key"
+        C0RC_BCK_INSENSITIVE_TARGETS="bck7-key bck4-key bck3-key"
     elif [ "$(hostname)" = "capetown2" ]; then
         C0RC_BCK_INSENSITIVE_TARGETS="bck3-key"
     else
