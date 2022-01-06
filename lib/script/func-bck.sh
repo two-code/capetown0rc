@@ -334,13 +334,22 @@ function c0rc_bck_open_close() {
 
 function c0rc_bck_run_insensitive_to() {
     if [ $# -ne 1 ]; then
-        c0rc_bck_err "one argument specifying backup name expected"
+        c0rc_bck_err "one argument specifying backup target name expected"
         return 1
     fi
 
-    local backend_device=$(realpath /dev/disk/by-partlabel/$1)
+    local partition_label="$1"
+    local backend_device_rel=$(readlink "/dev/disk/by-partlabel/$partition_label")
     if [ $? -ne 0 ]; then
-        c0rc_bck_err "error while getting device path for '${TXT_COLOR_YELLOW}$1${TXT_COLOR_NONE}'"
+        c0rc_bck_err "error while resolving disk by partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}'"
+        return 1
+    elif [ -z "$backend_device_rel" ]; then
+        c0rc_bck_err "partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}' resolved to empty disk path"
+        return 1
+    fi
+    local backend_device="/dev/$(basename $backend_device_rel)"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while resolving disk by partition label '${TXT_COLOR_YELLOW}${partition_label}${TXT_COLOR_NONE}'"
         return 1
     fi
 
@@ -359,7 +368,8 @@ function c0rc_bck_run_insensitive_to() {
         return 1
     fi
 
-    local save_loc="./insensitive/$(hostname)-$(date '+%Y%m%d_%H%M')-$(head -c 4 /dev/urandom | xxd -c 4 -l 4 -p)"
+    local save_loc_base="./insensitive/$C0RC_HH_COOKIE"
+    local save_loc="$save_loc_base/$(hostname)-$(date '+%Y%m%d_%H%M')-$(head -c 4 /dev/urandom | xxd -c 4 -l 4 -p)"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while generating name of tmp save location"
         return 1
@@ -416,7 +426,7 @@ function c0rc_bck_run_insensitive_to() {
     fi
 
     local save_loc_full=$(realpath $save_loc)
-    for dir_to_remove in $(find ./insensitive -mindepth 1 -maxdepth 1 -type d | xargs realpath); do
+    for dir_to_remove in $(find $save_loc_base -mindepth 1 -maxdepth 1 -type d | xargs realpath); do
         if [ ! "$save_loc_full" = "$dir_to_remove" ]; then
             c0rc_bck_warn "remove backup '${TXT_COLOR_YELLOW}$dir_to_remove${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
             sudo chattr -i -R "$dir_to_remove"

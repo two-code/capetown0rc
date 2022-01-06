@@ -1,13 +1,16 @@
-export TXT_COLOR_YELLOW="${TXT_COLOR_YELLOW:-\033[0;33m}"
-export TXT_COLOR_ORANGE="${TXT_COLOR_ORANGE:-\033[38;5;208m}"
-export TXT_COLOR_WHITE="${TXT_COLOR_WHITE:-\033[1;37m}"
-export TXT_COLOR_RED="${TXT_COLOR_RED:-\033[1;31m}"
-export TXT_COLOR_GREEN="${TXT_COLOR_GREEN:-\033[0;32m}"
 export TXT_COLOR_CYAN="${TXT_COLOR_CYAN:-\033[0;36m}"
+export TXT_COLOR_GREEN="${TXT_COLOR_GREEN:-\033[0;32m}"
 export TXT_COLOR_NONE="${TXT_COLOR_NONE:-\033[0m}"
+export TXT_COLOR_ORANGE="${TXT_COLOR_ORANGE:-\033[38;5;208m}"
+export TXT_COLOR_RED="${TXT_COLOR_RED:-\033[1;31m}"
+export TXT_COLOR_WHITE="${TXT_COLOR_WHITE:-\033[1;37m}"
+export TXT_COLOR_YELLOW="${TXT_COLOR_YELLOW:-\033[0;33m}"
+
+export TXT_COLOR_ERR="${TXT_COLOR_ERR:-$TXT_COLOR_RED}"
 export TXT_COLOR_WARN="${TXT_COLOR_WARN:-$TXT_COLOR_ORANGE}"
-export TXT_SPLITTER="${TXT_SPLITTER:---------------------------------------------------------------------------------}"
+
 export TXT_SPLITTER_COLOR="${TXT_SPLITTER_COLOR:-\033[38;5;147m}"
+export TXT_SPLITTER="${TXT_SPLITTER:---------------------------------------------------------------------------------}"
 
 export GDK_SCALE=1.0
 export GDK_DPI_SCALE=1.0
@@ -151,4 +154,29 @@ export C0RC_WS_DOCS_ENC_SECRET_NAME="${C0RC_WS_DOCS_ENC_SECRET_NAME:-doc}"
 export C0RC_WS_VIDESS_DIR="${C0RC_WS_VIDESS_DIR:-"$C0RC_WS_DIR/_media/_videos/@especial"}"
 export C0RC_WS_VIDESS_ENC_DIR="${C0RC_WS_VIDESS_ENC_DIR:-"$C0RC_WS_DIR/_media/_videos/@especial_secured"}"
 export C0RC_WS_VIDESS_ENC_SECRET_NAME="${C0RC_WS_VIDESS_ENC_SECRET_NAME:-videss}"
+# }}}
+
+# cookie {{{
+export C0RC_HH_COOKIE="${C0RC_HH_COOKIE:-}"
+if [ -z "$C0RC_HH_COOKIE" ]; then
+    if [ -f "$HOME/.c0rc-hh-cookie" ]; then
+        C0RC_HH_COOKIE=$(cat "$HOME/.c0rc-hh-cookie")
+        if [ $? -ne 0 ]; then
+            echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
+        fi
+    else
+        c0rc_hh_cookie_tmp="$(head -c 8 /dev/urandom | xxd -l 8 -p -c 8)_$(hostname)_$(whoami)"
+        c0rc_hh_cookie_tmp="$(hostname)_$(whoami)_$(sha256 <<<$c0rc_hh_cookie_tmp | xxd -p -c 32 | head -c 12)"
+        if [ $? -ne 0 ]; then
+            echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
+        else
+            echo -n "$c0rc_hh_cookie_tmp" >"$HOME/.c0rc-hh-cookie"
+            if [ $? -ne 0 ]; then
+                echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
+            else
+                C0RC_HH_COOKIE=$c0rc_hh_cookie_tmp
+            fi
+        fi
+    fi
+fi
 # }}}
