@@ -23,6 +23,20 @@ function c0rc_dir_unseal() {
         return 1
     fi
 
+    sudo chattr -i -R "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while unsetting imuutability attribute"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    sudo chmod u+w -R "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while unsetting permissions"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
     c0rc_info "$msg_prologue $C0RC_OP_OK"
 
     return 0
