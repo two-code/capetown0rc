@@ -352,18 +352,26 @@ function c0rc_bck_run_insensitive_to() {
         return 1
     fi
 
-    local mnt_pth="/mnt/tmp-$(c0rc_gen_uuid)"
+    local mount_point="/mnt/tmp-$(c0rc_gen_uuid)"
 
-    sudo mkdir -p $mnt_pth &&
-        sudo chown vitalik:vitalik $mnt_pth
+    sudo mkdir -p $mount_point &&
+        sudo chown vitalik:vitalik $mount_point
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while creating tmp mount point"
         return 1
     fi
 
-    sudo mount $backend_device "$mnt_pth"
+    sudo mount $backend_device $mount_point
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while mounting '${TXT_COLOR_YELLOW}$backend_device${TXT_COLOR_NONE}'"
+        sudo rm -d $mount_point
+        return 1
+    fi
+    sudo df $mount_point >/dev/null
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while mounting '${TXT_COLOR_YELLOW}$backend_device${TXT_COLOR_NONE}': file system mount check failed"
+        sudo umount $mount_point
+        sudo rm -d $mount_point
         return 1
     fi
 
@@ -371,10 +379,12 @@ function c0rc_bck_run_insensitive_to() {
     local save_loc="$save_loc_base/$(hostname)-$(date '+%Y%m%d_%H%M')-$(head -c 4 /dev/urandom | xxd -c 4 -l 4 -p)"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while generating name of tmp save location"
+        sudo umount $mount_point
+        sudo rm -d $mount_point
         return 1
     fi
 
-    pushd $mnt_pth >/dev/null
+    pushd $mount_point >/dev/null
     sudo mkdir -p $save_loc &&
         sudo mkdir -p "$save_loc/root" &&
         sudo mkdir -p "$save_loc/etc" &&
@@ -383,6 +393,7 @@ function c0rc_bck_run_insensitive_to() {
         sudo mkdir -p "$save_loc/usr/share/keyrings" &&
         sudo mkdir -p "$save_loc/boot/grub/themes/kali" &&
         sudo mkdir -p "$save_loc/workspace/_backup/os-settings" &&
+        sudo mkdir -p "$save_loc/.gnupg" &&
         sudo cp -ar ~/workspace/_backup/os-settings "$save_loc/workspace/_backup/" &&
         sudo cp -ar ~/workspace/corsair-keyboard.ckb "$save_loc/workspace/" &&
         sudo cp -ar ~/workspace/logitech-default.gpfl "$save_loc/workspace/" &&
@@ -392,6 +403,11 @@ function c0rc_bck_run_insensitive_to() {
         sudo cp -ar ~/.capetown0rc "$save_loc/" &&
         sudo cp -ar ~/.secrets "$save_loc/" &&
         sudo cp -ar ~/.ssh "$save_loc/" &&
+        sudo cp -ar ~/.gnupg/gpg.conf "$save_loc/.gnupg/" &&
+        sudo cp -ar ~/.gnupg/gpgsm.conf "$save_loc/.gnupg/" &&
+        sudo cp -ar ~/.gnupg/gpg-agent.conf "$save_loc/.gnupg/" &&
+        sudo cp -ar ~/.gnupg/scdaemon.conf "$save_loc/.gnupg/" &&
+        sudo cp -ar ~/.gnupg/sshcontrol "$save_loc/.gnupg/" &&
         sudo cp -ar ~/.2fa "$save_loc/" &&
         sudo cp -ar ~/.zsh_history "$save_loc/" &&
         sudo cp -ar ~/.zshrc "$save_loc/" &&
@@ -414,6 +430,8 @@ function c0rc_bck_run_insensitive_to() {
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while copying"
         popd >/dev/null
+        sudo umount $mount_point
+        sudo rm -d $mount_point
         return 1
     fi
 
@@ -421,6 +439,8 @@ function c0rc_bck_run_insensitive_to() {
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while syncing fs"
         popd >/dev/null
+        sudo umount $mount_point
+        sudo rm -d $mount_point
         return 1
     fi
 
@@ -442,6 +462,8 @@ function c0rc_bck_run_insensitive_to() {
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while setting read-only attr"
         popd >/dev/null
+        sudo umount $mount_point
+        sudo rm -d $mount_point
         return 1
     fi
 
@@ -449,22 +471,24 @@ function c0rc_bck_run_insensitive_to() {
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while syncing fs"
         popd >/dev/null
+        sudo umount $mount_point
+        sudo rm -d $mount_point
         return 1
     fi
 
     c0rc_bck_info "size '${TXT_COLOR_YELLOW}$(du -sh $save_loc)${TXT_COLOR_NONE}'"
     popd >/dev/null
 
-    c0rc_bck_info "total size '${TXT_COLOR_YELLOW}$(du -sh $mnt_pth)${TXT_COLOR_NONE}'"
+    c0rc_bck_info "total size '${TXT_COLOR_YELLOW}$(du -sh $mount_point)${TXT_COLOR_NONE}'"
 
-    sudo umount "$mnt_pth"
+    sudo umount $mount_point
     if [ $? -ne 0 ]; then
         c0rc_bck_warn "error while unmounting backup device '${TXT_COLOR_YELLOW}$backend_device${TXT_COLOR_NONE}'"
     fi
 
-    sudo rm -d "$mnt_pth"
+    sudo rm -d $mount_point
     if [ $? -ne 0 ]; then
-        c0rc_bck_warn "error while removing tmp mount point '${TXT_COLOR_YELLOW}$mnt_pth${TXT_COLOR_NONE}'"
+        c0rc_bck_warn "error while removing tmp mount point '${TXT_COLOR_YELLOW}$mount_point${TXT_COLOR_NONE}'"
     fi
 
     return 0
