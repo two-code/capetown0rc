@@ -980,6 +980,14 @@ function c0rc_luks_init() {
     c0rc_secrets_dir_seal
     # }}}
 
+    # unmount ramfs {{{
+    sudo umount -f "$ramfs_mount_point" &&
+        sudo rm -fdr "$ramfs_mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while unmounting ramfs"
+    fi
+    # }}}
+
     # close created container {{{
     c0rc_luks_close --container_name="$container_name" --mount_point="$mount_point"
     # }}}
