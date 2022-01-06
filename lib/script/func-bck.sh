@@ -219,7 +219,6 @@ function c0rc_bck_open() {
         sudo chown vitalik:vitalik "$ramfs_mnt_path" &&
         sudo chmod a-rwx "$ramfs_mnt_path" &&
         sudo chmod u+rwx "$ramfs_mnt_path"
-
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while mounting ramfs"
         sudo rm -fdr "$ramfs_mnt_path"

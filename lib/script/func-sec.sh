@@ -645,6 +645,7 @@ function c0rc_luks_open() {
     fi
     # }}}
 
+    # mounts {{{
     sudo mkdir -p "$mount_point" &&
         sudo chown vitalik:vitalik "$mount_point" &&
         sudo mkdir -p "$ramfs_mount_point" &&
@@ -655,19 +656,25 @@ function c0rc_luks_open() {
         return 1
     fi
 
-    # integrity device {{{
-    c0rc_info "open integrity device: $C0RC_OP_PROGRESS"
-
     sudo mount -t ramfs ramfs "$ramfs_mount_point" &&
         sudo chown vitalik:vitalik "$ramfs_mount_point" &&
         sudo chmod a-rwx "$ramfs_mount_point" &&
         sudo chmod u+rwx "$ramfs_mount_point"
-
     if [ $? -ne 0 ]; then
         c0rc_err "error while mounting ramfs"
         sudo rm -fdr "$ramfs_mount_point"
         return 1
     fi
+    sudo df "$ramfs_mount_point" >/dev/null
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while mounting ramfs: file system mount check failed"
+        sudo rm -fdr "$ramfs_mount_point"
+        return 1
+    fi
+    # }}}
+
+    # integrity device {{{
+    c0rc_info "open integrity device: $C0RC_OP_PROGRESS"
 
     c0rc_gpg_decrypt_to "$integrity_key" "$integrity_key_raw"
     if [ $? -ne 0 ]; then
@@ -810,6 +817,22 @@ function c0rc_luks_init() {
         sudo chown vitalik:vitalik "$ramfs_mount_point"
     if [ $? -ne 0 ]; then
         c0rc_err "error while creating and tuning mount points"
+        sudo rm -fdr "$ramfs_mount_point"
+        return 1
+    fi
+
+    sudo mount -t ramfs ramfs "$ramfs_mount_point" &&
+        sudo chown vitalik:vitalik "$ramfs_mount_point" &&
+        sudo chmod a-rwx "$ramfs_mount_point" &&
+        sudo chmod u+rwx "$ramfs_mount_point"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while mounting ramfs"
+        sudo rm -fdr "$ramfs_mount_point"
+        return 1
+    fi
+    sudo df "$ramfs_mount_point" >/dev/null
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while mounting ramfs: file system mount check failed"
         sudo rm -fdr "$ramfs_mount_point"
         return 1
     fi
