@@ -1,5 +1,5 @@
 *.DS_Store
-bin/*/**
+bin/*
 !bin/.gitkeep
 
 tmp/*
