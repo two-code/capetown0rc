@@ -27,6 +27,52 @@ function c0rc_timeshift_mount_try_unmount() {
     return 0
 }
 
+function c0rc_bck_run_precond_check() {
+    c0rc_check_hh_cookie
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
+    if ! command -v timeshift &>/dev/null; then
+        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}timeshift${TXT_COLOR_NONE}' available; possibly, you need to install it"
+        return 1
+    fi
+
+    local c0rc_cmd=$(command -v c0rc 2>/dev/null)
+    if [ ! -n "$c0rc_cmd" ]; then
+        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}c0rc${TXT_COLOR_NONE}' available; possibly, you need to install using 'go install github.com/two-code/capetown0rc.git/go' (or using make, if you have cloned repository)"
+        return 1
+    fi
+
+    sudo sync -f
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while syncing fs; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        return 1
+    fi
+
+    if [ -d "$C0RC_WS_DOCS_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_DOCS_DIR")" ]; then
+        c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_DOCS_DIR${TXT_COLOR_NONE}' not empty"
+        return 1
+    fi
+
+    if [ -d "$C0RC_WS_VIDESS_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_VIDESS_DIR")" ]; then
+        c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_VIDESS_DIR${TXT_COLOR_NONE}' not empty"
+        return 1
+    fi
+
+    if [ -d "$C0RC_WS_SECV_LEGACY_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_SECV_LEGACY_DIR")" ]; then
+        c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_SECV_LEGACY_DIR${TXT_COLOR_NONE}' not empty"
+        return 1
+    fi
+
+    if [ -d "$C0RC_WS_SECV_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_SECV_DIR")" ]; then
+        c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_SECV_DIR${TXT_COLOR_NONE}' not empty"
+        return 1
+    fi
+
+    return 0
+}
+
 function c0rc_bck_init_params() {
     # need to be removed when c0rc_luks_open/c0rc_luks_close will be used
     #
@@ -343,6 +389,11 @@ function c0rc_bck_run_insensitive_to() {
         target="$1"
     fi
 
+    c0rc_bck_run_precond_check
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
     local partition_label="$target$C0RC_BCK_INSENSITIVE_TARGET_POSTFIX"
     local backend_device_rel=$(readlink "/dev/disk/by-partlabel/$partition_label")
     if [ $? -ne 0 ]; then
@@ -528,6 +579,11 @@ function c0rc_bck_run_insensitive() {
         return 1
     fi
 
+    c0rc_bck_run_precond_check
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
     local has_fail='n'
     local failed_targets=''
     local succeeded_targets=''
@@ -564,45 +620,13 @@ function c0rc_bck_run_system_to() {
         return 1
     fi
 
-    if ! command -v timeshift &>/dev/null; then
-        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}timeshift${TXT_COLOR_NONE}' available; possibly, you need to install it"
-        return 1
-    fi
-
-    local c0rc_cmd=$(command -v c0rc 2>/dev/null)
-    if [ ! -n "$c0rc_cmd" ]; then
-        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}c0rc${TXT_COLOR_NONE}' available; possibly, you need to install using 'go install github.com/two-code/capetown0rc.git/go' (or using make, if you have cloned repository)"
+    c0rc_bck_run_precond_check
+    if [ $? -ne 0 ]; then
         return 1
     fi
 
     local bck_target="$1"
     local bck_note="$2"
-
-    sudo sync -f
-    if [ $? -ne 0 ]; then
-        c0rc_bck_err "error while syncing fs; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
-        return 1
-    fi
-
-    if [ -d "$C0RC_WS_DOCS_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_DOCS_DIR")" ]; then
-        c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_DOCS_DIR${TXT_COLOR_NONE}' not empty; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
-        return 1
-    fi
-
-    if [ -d "$C0RC_WS_VIDESS_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_VIDESS_DIR")" ]; then
-        c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_VIDESS_DIR${TXT_COLOR_NONE}' not empty; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
-        return 1
-    fi
-
-    if [ -d "$C0RC_WS_SECV_LEGACY_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_SECV_LEGACY_DIR")" ]; then
-        c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_SECV_LEGACY_DIR${TXT_COLOR_NONE}' not empty; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
-        return 1
-    fi
-
-    if [ -d "$C0RC_WS_SECV_DIR" ] && [ ! -z "$(ls -A "$C0RC_WS_SECV_DIR")" ]; then
-        c0rc_bck_err "directory '${TXT_COLOR_YELLOW}$C0RC_WS_SECV_DIR${TXT_COLOR_NONE}' not empty; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
-        return 1
-    fi
 
     local bck_device_uuid=""
     c0rc_bck_open "$bck_target" bck_device_uuid
@@ -659,6 +683,11 @@ function c0rc_bck_run_system() {
         return 1
     fi
 
+    c0rc_bck_run_precond_check
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
     local has_fail='n'
     local failed_targets=''
     local succeeded_targets=''
@@ -698,6 +727,11 @@ function c0rc_bck_run_regular() {
         kinds="$C0RC_BCK_REGULAR_PLAN_KINDS"
     else
         c0rc_bck_err "too many args passed; only one argument allowed - specifying kinds"
+        return 1
+    fi
+
+    c0rc_bck_run_precond_check
+    if [ $? -ne 0 ]; then
         return 1
     fi
 
@@ -746,8 +780,8 @@ function c0rc_bck_ls_system() {
         return 1
     fi
 
-    if ! command -v timeshift &>/dev/null; then
-        c0rc_bck_err "no command '${TXT_COLOR_YELLOW}timeshift${TXT_COLOR_NONE}' available; possibly, you need to install it"
+    c0rc_bck_run_precond_check
+    if [ $? -ne 0 ]; then
         return 1
     fi
 

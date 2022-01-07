@@ -1,5 +1,7 @@
 #!/bin/env zsh
 
+set -o pipefail
+
 export C0RC_DIR="${C0RC_DIR:-"${HOME}/.capetown0rc"}"
 export C0RC_SCRIPT_DIR="${C0RC_SCRIPT_DIR:-"${C0RC_DIR}/lib/script"}"
 export C0RC_BIN_DIR="${C0RC_BIN_DIR:-"${C0RC_DIR}/bin"}"

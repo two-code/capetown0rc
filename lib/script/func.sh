@@ -29,3 +29,12 @@ function c0rc_env() {
         sed -r "s/^([^=]+)=(.+)$/\1 = $(echo -n $TXT_COLOR_YELLOW | sed 's/\\/\\\\/')\2$(echo -n $TXT_COLOR_NONE | sed 's/\\/\\\\/')/g" |
         cat -n
 }
+
+function c0rc_check_hh_cookie() {
+    if [ -z "$C0RC_HH_COOKIE" ]; then
+        c0rc_err "current operation requires parameter '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'; but that parameter not set as expected"
+        return 1
+    fi
+
+    return 0
+}
