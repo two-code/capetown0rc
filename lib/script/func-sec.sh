@@ -102,6 +102,9 @@ function c0rc_secrets_2fa_dir_seal() {
 
 function c0rc_secrets_dir_seal() {
     c0rc_dir_seal "$C0RC_SECRETS_DIR"
+    if [ $# -ne 0 ]; then
+        return 1
+    fi
 
     return 0
 }

@@ -332,18 +332,24 @@ function c0rc_bck_open_close() {
 }
 
 function c0rc_bck_run_insensitive_to() {
+    local target=""
     if [ $# -ne 1 ]; then
-        c0rc_bck_err "one argument specifying backup target name expected"
+        c0rc_bck_err "one argument specifying target name expected"
         return 1
+    elif [ -z "$1" ]; then
+        c0rc_bck_err "target name can't be empty string"
+        return 1
+    else
+        target="$1"
     fi
 
-    local partition_label="$1"
+    local partition_label="$target$C0RC_BCK_INSENSITIVE_TARGET_POSTFIX"
     local backend_device_rel=$(readlink "/dev/disk/by-partlabel/$partition_label")
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while resolving disk by partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}'"
         return 1
     elif [ -z "$backend_device_rel" ]; then
-        c0rc_bck_err "partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}' resolved to empty disk path"
+        c0rc_bck_err "partition label '${TXT_COLOR_YELLOW}$partition_label${TXT_COLOR_NONE}' resolved to an empty disk path"
         return 1
     fi
     local backend_device="/dev/$(basename $backend_device_rel)"
@@ -391,48 +397,63 @@ function c0rc_bck_run_insensitive_to() {
         sudo mkdir -p "$save_loc/etc/apt" &&
         sudo mkdir -p "$save_loc/etc/apt/sources.list.d" &&
         sudo mkdir -p "$save_loc/etc/ssh" &&
-        sudo mkdir -p "$save_loc/home" &&
+        sudo mkdir -p "$save_loc/home/.secrets" &&
         sudo mkdir -p "$save_loc/home/.gnupg" &&
         sudo mkdir -p "$save_loc/home/workspace/_backup/os-settings" &&
         sudo mkdir -p "$save_loc/root" &&
         sudo mkdir -p "$save_loc/usr/share/keyrings" &&
-        sudo cp -ar ~/.2fa "$save_loc/home/" &&
-        sudo cp -ar ~/.capetown0rc "$save_loc/home/" &&
-        sudo cp -ar ~/.clickhouse-client-history "$save_loc/home/" &&
-        sudo cp -ar ~/.gitconfig "$save_loc/home/" &&
-        sudo cp -ar ~/.gnupg/gpg-agent.conf "$save_loc/home/.gnupg/" &&
-        sudo cp -ar ~/.gnupg/gpg.conf "$save_loc/home/.gnupg/" &&
-        sudo cp -ar ~/.gnupg/gpgsm.conf "$save_loc/home/.gnupg/" &&
-        sudo cp -ar ~/.gnupg/scdaemon.conf "$save_loc/home/.gnupg/" &&
-        sudo cp -ar ~/.gnupg/sshcontrol "$save_loc/home/.gnupg/" &&
-        sudo cp -ar ~/.profile "$save_loc/home/" &&
-        sudo cp -ar ~/.secrets "$save_loc/home/" &&
-        sudo cp -ar ~/.ssh "$save_loc/home/" &&
-        sudo cp -ar ~/.zsh_history "$save_loc/home/" &&
-        sudo cp -ar ~/.zshrc "$save_loc/home/" &&
-        sudo cp -ar ~/workspace/_backup/os-settings "$save_loc/home/workspace/_backup/" &&
-        sudo cp -ar ~/workspace/corsair-keyboard.ckb "$save_loc/home/workspace/" &&
-        sudo cp -ar ~/workspace/logitech-default.gpfl "$save_loc/home/workspace/" &&
-        sudo cp -ar ~/workspace/my-ublock-* "$save_loc/home/workspace/" &&
-        sudo cp -ar /boot/grub/themes "$save_loc/boot/grub/" &&
-        sudo cp -ar /etc/apt/sources.list "$save_loc/etc/apt/" &&
-        sudo cp -ar /etc/apt/sources.list.d "$save_loc/etc/apt/" &&
-        sudo cp -ar /etc/crypttab "$save_loc/etc/" &&
-        sudo cp -ar /etc/default "$save_loc/etc/" &&
-        sudo cp -ar /etc/environment "$save_loc/etc/" &&
-        sudo cp -ar /etc/fstab "$save_loc/etc/" &&
-        sudo cp -ar /etc/sddm "$save_loc/etc/" &&
-        sudo cp -ar /etc/sddm.conf "$save_loc/etc/" &&
-        sudo cp -ar /etc/sddm.conf.d "$save_loc/etc/" &&
-        sudo cp -ar /etc/ssh/ssh_config "$save_loc/etc/ssh/" &&
-        sudo cp -ar /etc/ssh/ssh_config.d "$save_loc/etc/ssh/" &&
-        sudo cp -ar /etc/ssh/sshd_config.d "$save_loc/etc/ssh/" &&
-        sudo cp -ar /root/.profile "$save_loc/root/" &&
-        sudo cp -ar /root/.zsh_history "$save_loc/root/" &&
-        sudo cp -ar /root/.zshrc "$save_loc/root/" &&
-        sudo cp -ar /usr/share/keyrings "$save_loc/usr/share"
+        sudo cp -aL ~/.2fa "$save_loc/home/" &&
+        sudo cp -aL ~/.capetown0rc "$save_loc/home/" &&
+        sudo cp -aL ~/.clickhouse-client-history "$save_loc/home/" &&
+        sudo cp -aL ~/.gitconfig "$save_loc/home/" &&
+        sudo cp -aL ~/.gnupg/gpg-agent.conf "$save_loc/home/.gnupg/" &&
+        sudo cp -aL ~/.gnupg/gpg.conf "$save_loc/home/.gnupg/" &&
+        sudo cp -aL ~/.gnupg/gpgsm.conf "$save_loc/home/.gnupg/" &&
+        sudo cp -aL ~/.gnupg/scdaemon.conf "$save_loc/home/.gnupg/" &&
+        sudo cp -aL ~/.gnupg/sshcontrol "$save_loc/home/.gnupg/" &&
+        sudo cp -aL ~/.profile "$save_loc/home/" &&
+        sudo cp -aL ~/.ssh "$save_loc/home/" &&
+        sudo cp -aL ~/.zsh_history "$save_loc/home/" &&
+        sudo cp -aL ~/.zshrc "$save_loc/home/" &&
+        sudo cp -aL ~/workspace/_backup/os-settings "$save_loc/home/workspace/_backup/" &&
+        sudo cp -aL ~/workspace/corsair-keyboard.ckb "$save_loc/home/workspace/" &&
+        sudo cp -aL ~/workspace/logitech-default.gpfl "$save_loc/home/workspace/" &&
+        sudo cp -aL ~/workspace/my-ublock-* "$save_loc/home/workspace/" &&
+        sudo cp -aL /boot/grub/themes "$save_loc/boot/grub/" &&
+        sudo cp -aL /etc/apt/sources.list "$save_loc/etc/apt/" &&
+        sudo cp -aL /etc/apt/sources.list.d "$save_loc/etc/apt/" &&
+        sudo cp -aL /etc/crypttab "$save_loc/etc/" &&
+        sudo cp -aL /etc/default "$save_loc/etc/" &&
+        sudo cp -aL /etc/environment "$save_loc/etc/" &&
+        sudo cp -aL /etc/fstab "$save_loc/etc/" &&
+        sudo cp -aL /etc/sddm "$save_loc/etc/" &&
+        sudo cp -aL /etc/sddm.conf "$save_loc/etc/" &&
+        sudo cp -aL /etc/sddm.conf.d "$save_loc/etc/" &&
+        sudo cp -aL /etc/ssh/ssh_config "$save_loc/etc/ssh/" &&
+        sudo cp -aL /etc/ssh/ssh_config.d "$save_loc/etc/ssh/" &&
+        sudo cp -aL /etc/ssh/sshd_config.d "$save_loc/etc/ssh/" &&
+        sudo cp -aL /root/.profile "$save_loc/root/" &&
+        sudo cp -aL /root/.zsh_history "$save_loc/root/" &&
+        sudo cp -aL /root/.zshrc "$save_loc/root/" &&
+        sudo cp -aL /usr/share/keyrings "$save_loc/usr/share"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while copying"
+        sudo rm -fdrv "$save_loc"
+        popd >/dev/null
+        sudo umount $mount_point
+        sudo rm -d $mount_point
+        return 1
+    fi
+
+    local secret_file_exclude_pattern=$(echo '.*\/'"$target"'[^\/]+$')
+    c0rc_bck_warn "copy secrets' files NOT matching pattern '${TXT_COLOR_YELLOW}$secret_file_exclude_pattern${TXT_COLOR_NONE}'"
+    find "$C0RC_SECRETS_DIR" -mindepth 1 -maxdepth 1 |
+        grep -v -E "$secret_file_exclude_pattern" |
+        LC_ALL=C sort |
+        xargs -I{} sudo cp -aL {} "$save_loc/home/.secrets/"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while copying"
+        sudo rm -fdrv "$save_loc"
         popd >/dev/null
         sudo umount $mount_point
         sudo rm -d $mount_point
@@ -442,6 +463,7 @@ function c0rc_bck_run_insensitive_to() {
     sync -f
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while syncing fs"
+        sudo rm -fdrv "$save_loc"
         popd >/dev/null
         sudo umount $mount_point
         sudo rm -d $mount_point
@@ -465,6 +487,7 @@ function c0rc_bck_run_insensitive_to() {
     sudo chattr +i -R "$save_loc"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while setting read-only attr"
+        sudo rm -fdrv "$save_loc"
         popd >/dev/null
         sudo umount $mount_point
         sudo rm -d $mount_point
@@ -474,10 +497,6 @@ function c0rc_bck_run_insensitive_to() {
     sync -f
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while syncing fs"
-        popd >/dev/null
-        sudo umount $mount_point
-        sudo rm -d $mount_point
-        return 1
     fi
 
     c0rc_bck_info "size '${TXT_COLOR_YELLOW}$(du -sh $save_loc)${TXT_COLOR_NONE}'"

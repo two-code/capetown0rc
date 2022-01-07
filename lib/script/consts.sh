@@ -29,10 +29,11 @@ export C0RC_BCK_OUTPUT_INIT_PARAMS="${C0RC_BCK_OUTPUT_INIT_PARAMS:-n}"
 
 export C0RC_BCK_VOLUME_DEFAULT_FS="${C0RC_BCK_VOLUME_DEFAULT_FS:-ext4}"
 
+export C0RC_BCK_INSENSITIVE_TARGET_POSTFIX="${C0RC_BCK_INSENSITIVE_TARGET_POSTFIX:--key}"
 export C0RC_BCK_INSENSITIVE_TARGETS="${C0RC_BCK_INSENSITIVE_TARGETS:-}"
 if [ -z $C0RC_BCK_INSENSITIVE_TARGETS ]; then
     if [ "$(hostname)" = "capetown0" ]; then
-        C0RC_BCK_INSENSITIVE_TARGETS="bck7-key bck4-key bck3-key"
+        C0RC_BCK_INSENSITIVE_TARGETS="bck7 bck4 bck3"
     elif [ "$(hostname)" = "capetown2" ]; then
         C0RC_BCK_INSENSITIVE_TARGETS="bck3-key"
     else
