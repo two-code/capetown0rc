@@ -112,7 +112,7 @@ function c0rc_apt_upgradable_pkgs_names() {
         return 1
     fi
 
-    LC_ALL=C comm -3 $upgradable_pkgs_file $hold_pkgs_file
+    LC_ALL=C comm -23 $upgradable_pkgs_file $hold_pkgs_file
     if [ $? -ne 0 ]; then
         c0rc_err "error while comparing list of pkgs"
         rm -f $hold_pkgs_file
