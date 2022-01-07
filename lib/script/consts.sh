@@ -159,25 +159,30 @@ export C0RC_WS_VIDESS_ENC_SECRET_NAME="${C0RC_WS_VIDESS_ENC_SECRET_NAME:-videss}
 
 # cookie {{{
 export C0RC_HH_COOKIE="${C0RC_HH_COOKIE:-}"
-if [ -z "$C0RC_HH_COOKIE" ]; then
+function c0rc_set_hh_cookie() {
+    set -o pipefail
+
     if [ -f "$HOME/.c0rc-hh-cookie" ]; then
         C0RC_HH_COOKIE=$(cat "$HOME/.c0rc-hh-cookie")
         if [ $? -ne 0 ]; then
             echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
         fi
     else
-        c0rc_hh_cookie_tmp="$(head -c 8 /dev/urandom | xxd -l 8 -p -c 8)_$(hostname)_$(whoami)"
-        c0rc_hh_cookie_tmp="$(hostname)_$(whoami)_$(sha256 <<<$c0rc_hh_cookie_tmp | xxd -p -c 32 | head -c 12)"
+        local cookie_tmp="$(head -c 8 /dev/urandom | xxd -l 8 -p -c 8)_$(hostname)_$(whoami)"
+        cookie_tmp="$(hostname)_$(whoami)_$(sha256 <<<$cookie_tmp | xxd -p -c 32 | head -c 12)"
         if [ $? -ne 0 ]; then
             echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
         else
-            echo -n "$c0rc_hh_cookie_tmp" >"$HOME/.c0rc-hh-cookie"
+            echo -n "$cookie_tmp" >"$HOME/.c0rc-hh-cookie"
             if [ $? -ne 0 ]; then
                 echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
             else
-                C0RC_HH_COOKIE=$c0rc_hh_cookie_tmp
+                C0RC_HH_COOKIE=$cookie_tmp
             fi
         fi
     fi
+}
+if [ -z "$C0RC_HH_COOKIE" ]; then
+    c0rc_set_hh_cookie
 fi
 # }}}
