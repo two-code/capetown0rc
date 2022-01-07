@@ -9,20 +9,6 @@ function c0rc_dir_unseal() {
 
     c0rc_info "$msg_prologue $C0RC_OP_PROGRESS"
 
-    sudo chattr -i "$dir"
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while unsetting imuutability attribute"
-        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
-        return 1
-    fi
-
-    sudo chmod u+w "$dir"
-    if [ $? -ne 0 ]; then
-        c0rc_err "error while unsetting permissions"
-        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
-        return 1
-    fi
-
     sudo chattr -i -R "$dir"
     if [ $? -ne 0 ]; then
         c0rc_err "error while unsetting imuutability attribute"
@@ -30,9 +16,16 @@ function c0rc_dir_unseal() {
         return 1
     fi
 
-    sudo chmod u+w -R "$dir"
+    sudo chmod ug+rwx -R "$dir"
     if [ $? -ne 0 ]; then
         c0rc_err "error while unsetting permissions"
+        c0rc_err "$msg_prologue $C0RC_OP_FAIL"
+        return 1
+    fi
+
+    sudo chown "$(id -un)":"$(id -gn)" -R "$dir"
+    if [ $? -ne 0 ]; then
+        c0rc_err "error while setting owner"
         c0rc_err "$msg_prologue $C0RC_OP_FAIL"
         return 1
     fi
@@ -60,7 +53,7 @@ function c0rc_dir_seal() {
         return 1
     fi
 
-    sudo chown vitalik:vitalik -R "$dir"
+    sudo chown "$(id -un)":"$(id -gn)" -R "$dir"
     if [ $? -ne 0 ]; then
         c0rc_err "error while setting owner"
         c0rc_err "$msg_prologue $C0RC_OP_FAIL"
@@ -111,6 +104,9 @@ function c0rc_secrets_dir_seal() {
 
 function c0rc_secrets_dir_unseal() {
     c0rc_dir_unseal "$C0RC_SECRETS_DIR"
+    if [ $# -ne 0 ]; then
+        return 1
+    fi
 
     return 0
 }
@@ -371,7 +367,7 @@ function c0rc_secv_legacy_open() {
 
     # mount point(s) {{{
     sudo mkdir -p "$mount_point" &&
-        sudo chown vitalik:vitalik "$mount_point"
+        sudo chown "$(id -un)":"$(id -gn)" "$mount_point"
     if [ $? -ne 0 ]; then
         c0rc_err "error while creating and tuning mount point '${TXT_COLOR_YELLOW}$mount_point${TXT_COLOR_NONE}'"
         return 1
@@ -404,7 +400,7 @@ function c0rc_secv_legacy_open() {
         return 1
     fi
 
-    sudo chown vitalik:vitalik "$mount_point"
+    sudo chown "$(id -un)":"$(id -gn)" "$mount_point"
     if [ $? -ne 0 ]; then
         c0rc_err "error while tuning permissions/ownership for luks device's file system root"
         c0rc_secv_legacy_close
@@ -664,9 +660,9 @@ function c0rc_luks_open() {
 
     # mounts {{{
     sudo mkdir -p "$mount_point" &&
-        sudo chown vitalik:vitalik "$mount_point" &&
+        sudo chown "$(id -un)":"$(id -gn)" "$mount_point" &&
         sudo mkdir -p "$ramfs_mount_point" &&
-        sudo chown vitalik:vitalik "$ramfs_mount_point"
+        sudo chown "$(id -un)":"$(id -gn)" "$ramfs_mount_point"
     if [ $? -ne 0 ]; then
         c0rc_err "error while creating and tuning mount points"
         sudo rm -fdr "$ramfs_mount_point"
@@ -674,7 +670,7 @@ function c0rc_luks_open() {
     fi
 
     sudo mount -t ramfs ramfs "$ramfs_mount_point" &&
-        sudo chown vitalik:vitalik "$ramfs_mount_point" &&
+        sudo chown "$(id -un)":"$(id -gn)" "$ramfs_mount_point" &&
         sudo chmod a-rwx "$ramfs_mount_point" &&
         sudo chmod u+rwx "$ramfs_mount_point"
     if [ $? -ne 0 ]; then
@@ -754,7 +750,7 @@ function c0rc_luks_open() {
         return 1
     fi
 
-    sudo chown vitalik:vitalik "$mount_point"
+    sudo chown "$(id -un)":"$(id -gn)" "$mount_point"
     if [ $? -ne 0 ]; then
         c0rc_err "error while tuning permissions/ownership for luks device's file system root"
         c0rc_luks_close --container_name="$container_name" --mount_point="$mount_point"
@@ -829,9 +825,9 @@ function c0rc_luks_init() {
 
     # mounts {{{
     sudo mkdir -p "$mount_point" &&
-        sudo chown vitalik:vitalik "$mount_point" &&
+        sudo chown "$(id -un)":"$(id -gn)" "$mount_point" &&
         sudo mkdir -p "$ramfs_mount_point" &&
-        sudo chown vitalik:vitalik "$ramfs_mount_point"
+        sudo chown "$(id -un)":"$(id -gn)" "$ramfs_mount_point"
     if [ $? -ne 0 ]; then
         c0rc_err "error while creating and tuning mount points"
         sudo rm -fdr "$ramfs_mount_point"
@@ -839,7 +835,7 @@ function c0rc_luks_init() {
     fi
 
     sudo mount -t ramfs ramfs "$ramfs_mount_point" &&
-        sudo chown vitalik:vitalik "$ramfs_mount_point" &&
+        sudo chown "$(id -un)":"$(id -gn)" "$ramfs_mount_point" &&
         sudo chmod a-rwx "$ramfs_mount_point" &&
         sudo chmod u+rwx "$ramfs_mount_point"
     if [ $? -ne 0 ]; then

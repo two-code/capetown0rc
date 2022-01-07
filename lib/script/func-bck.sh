@@ -249,9 +249,9 @@ function c0rc_bck_open() {
     # }}}
 
     sudo mkdir -p "$mnt_path" &&
-        sudo chown vitalik:vitalik "$mnt_path" &&
+        sudo chown "$(id -un)":"$(id -gn)" "$mnt_path" &&
         sudo mkdir -p "$ramfs_mnt_path" &&
-        sudo chown vitalik:vitalik "$ramfs_mnt_path"
+        sudo chown "$(id -un)":"$(id -gn)" "$ramfs_mnt_path"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while creating and tuning mount points"
         sudo rm -fdr "$ramfs_mnt_path"
@@ -262,7 +262,7 @@ function c0rc_bck_open() {
     c0rc_bck_info "open integrity device: $C0RC_OP_PROGRESS"
 
     sudo mount -t ramfs ramfs "$ramfs_mnt_path" &&
-        sudo chown vitalik:vitalik "$ramfs_mnt_path" &&
+        sudo chown "$(id -un)":"$(id -gn)" "$ramfs_mnt_path" &&
         sudo chmod a-rwx "$ramfs_mnt_path" &&
         sudo chmod u+rwx "$ramfs_mnt_path"
     if [ $? -ne 0 ]; then
@@ -321,7 +321,7 @@ function c0rc_bck_open() {
         return 1
     fi
 
-    sudo chown vitalik:vitalik "$mnt_path"
+    sudo chown "$(id -un)":"$(id -gn)" "$mnt_path"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while tuning permissions/ownership for luks device's file system root"
         c0rc_bck_close "$bck_name"
@@ -412,7 +412,7 @@ function c0rc_bck_run_insensitive_to() {
     local mount_point="/mnt/tmp-$(c0rc_gen_uuid)"
 
     sudo mkdir -p $mount_point &&
-        sudo chown vitalik:vitalik $mount_point
+        sudo chown "$(id -un)":"$(id -gn)" $mount_point
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while creating tmp mount point"
         return 1
