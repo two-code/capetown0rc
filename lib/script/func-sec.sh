@@ -783,6 +783,7 @@ function c0rc_luks_open() {
     fi
 
     c0rc_info "luks device uuid '${TXT_COLOR_YELLOW}$luks_device_uuid_loc${TXT_COLOR_NONE}'"
+    c0rc_info "mount point '${TXT_COLOR_YELLOW}$mount_point${TXT_COLOR_NONE}'"
 
     if [ ! -z "$container_uuid_out" ]; then
         eval "$container_uuid_out=$luks_device_uuid_loc"

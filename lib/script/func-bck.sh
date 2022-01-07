@@ -354,6 +354,7 @@ function c0rc_bck_open() {
     fi
 
     c0rc_bck_info "luks device uuid '${TXT_COLOR_YELLOW}$luks_device_uuid_loc${TXT_COLOR_NONE}'"
+    c0rc_info "mount point '${TXT_COLOR_YELLOW}$mnt_path${TXT_COLOR_NONE}'"
 
     if [ $# -eq 2 ]; then
         eval "$2=$luks_device_uuid_loc"
