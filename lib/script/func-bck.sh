@@ -1063,7 +1063,6 @@ function c0rc_bck_restore_ws() {
         --sparse \
         --log-file="$log_file" \
         --exclude-from="$exclusions_file" \
-        --delete-excluded \
         "$current_snapshot_dir/" \
         "$restore_path"
     if [ $? -ne 0 ]; then
