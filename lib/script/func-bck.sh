@@ -1044,11 +1044,13 @@ function c0rc_bck_restore_ws() {
     echo -n "${TXT_COLOR_WARN}is it ok, continue? (y/n) ... " &&
         read -qs -t 15
     if [ $? -ne 0 ]; then
+        echo
         c0rc_bck_err "$msg_prologue no confirmation received from you; cancel"
         c0rc_bck_close $source_name
         rm -f $exclusions_file
         return 1
     fi
+    echo
     c0rc_bck_info "$msg_prologue need for your confirmation: $C0RC_OP_OK"
 
     c0rc_bck_info "$msg_prologue snapshot '${TXT_COLOR_YELLOW}$current_snapshot_dir${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
