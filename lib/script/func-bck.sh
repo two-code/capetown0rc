@@ -919,7 +919,7 @@ function c0rc_bck_restore_ws() {
     local restore_path=""
     while [ $# -gt 0 ]; do
         case "$1" in
-        --restore_path)
+        --restore_path=?*)
             restore_path=${1#*=}
             ;;
         --) shift break ;;
