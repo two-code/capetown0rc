@@ -632,7 +632,7 @@ function c0rc_bck_run_insensitive() {
 }
 
 function c0rc_bck_run_system_to() {
-    if [ $# -lt 3 ]; then
+    if [ $# -ne 2 ]; then
         c0rc_bck_err "two arguments specifying backup target name and backup note expected"
         return 1
     fi
