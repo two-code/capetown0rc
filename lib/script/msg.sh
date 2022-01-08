@@ -1,5 +1,5 @@
 function c0rc_err() {
-    echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERR:${TXT_COLOR_NONE} $*" >&2
+    echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] _ERR:${TXT_COLOR_NONE} $*" >&2
 }
 
 function c0rc_warn() {

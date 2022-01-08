@@ -320,6 +320,12 @@ function c0rc_bck_open() {
         c0rc_bck_close "$bck_name"
         return 1
     fi
+    sudo df "$mnt_path" >/dev/null
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "error while mounting luks device: file system mount check failed"
+        c0rc_bck_close "$bck_name"
+        return 1
+    fi
 
     sudo chown "$(id -un)":"$(id -gn)" "$mnt_path"
     if [ $? -ne 0 ]; then
@@ -354,11 +360,19 @@ function c0rc_bck_open() {
     fi
 
     c0rc_bck_info "luks device uuid '${TXT_COLOR_YELLOW}$luks_device_uuid_loc${TXT_COLOR_NONE}'"
-    c0rc_info "mount point '${TXT_COLOR_YELLOW}$mnt_path${TXT_COLOR_NONE}'"
+    c0rc_bck_info "mount point '${TXT_COLOR_YELLOW}$mnt_path${TXT_COLOR_NONE}'"
+    c0rc_bck_info "stats for '${TXT_COLOR_YELLOW}$encryption_mapper_full${TXT_COLOR_NONE}':\n$(lsblk -ao SIZE,FSSIZE,FSTYPE,FSAVAIL,FSUSED,FSUSE% $encryption_mapper_full)"
 
-    if [ $# -eq 2 ]; then
+    if [ $# -gt 1 ]; then
         eval "$2=$luks_device_uuid_loc"
     fi
+    if [ $# -gt 2 ]; then
+        eval "$3=$mnt_path"
+    fi
+    if [ $# -gt 3 ]; then
+        eval "$4=$encryption_mapper_full"
+    fi
+
     # }}}
 
     return 0
@@ -616,7 +630,7 @@ function c0rc_bck_run_insensitive() {
 }
 
 function c0rc_bck_run_system_to() {
-    if [ $# -ne 2 ]; then
+    if [ $# -lt 3 ]; then
         c0rc_bck_err "two arguments specifying backup target name and backup note expected"
         return 1
     fi
@@ -626,51 +640,57 @@ function c0rc_bck_run_system_to() {
         return 1
     fi
 
-    local bck_target="$1"
+    local target_name="$1"
     local bck_note="$2"
+    local mount_point=""
+    local luks_uuid=""
+    local luks_path=""
 
-    local bck_device_uuid=""
-    c0rc_bck_open "$bck_target" bck_device_uuid
+    local msg_prologue="[${TXT_COLOR_YELLOW}$C0RC_BCK_KIND_SYSTEM${TXT_COLOR_NONE}] [${TXT_COLOR_YELLOW}$target_name${TXT_COLOR_NONE}]:"
+
+    c0rc_bck_open $target_name luks_uuid mount_point luks_path
     if [ $? -ne 0 ]; then
-        c0rc_bck_err "error while opening backup target device; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_bck_err "$msg_prologue error while opening backup target device"
         return 1
     fi
 
-    sudo timeshift --create --comments "note: $bck_note" --snapshot-device "$bck_device_uuid"
+    sudo timeshift --create --comments "note: $bck_note" --snapshot-device "$luks_uuid"
     if [ $? -ne 0 ]; then
-        c0rc_bck_err "error while making backup; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_bck_err "$msg_prologue error while making backup"
         c0rc_timeshift_mount_try_unmount
-        c0rc_bck_close "$bck_target"
+        c0rc_bck_close "$target_name"
         return 1
     fi
 
     sudo sync -f
     if [ $? -ne 0 ]; then
-        c0rc_bck_err "error while syncing fs; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_bck_err "$msg_prologue error while syncing fs"
         c0rc_timeshift_mount_try_unmount
-        c0rc_bck_close "$bck_target"
+        c0rc_bck_close "$target_name"
         return 1
     fi
 
     sudo "$c0rc_cmd" bck timeshift clean --retain-count=$C0RC_BCK_SYSTEM_RETENTION
     if [ $? -ne 0 ]; then
-        c0rc_bck_warn "error while cleaning backups; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_bck_warn "$msg_prologue error while cleaning backups"
     fi
 
-    sudo timeshift --list --snapshot-device "$bck_device_uuid"
+    sudo timeshift --list --snapshot-device "$luks_uuid"
     if [ $? -ne 0 ]; then
-        c0rc_bck_warn "error while listing backups; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_bck_warn "$msg_prologue error while listing backups"
     fi
 
     c0rc_timeshift_mount_try_unmount
 
-    c0rc_bck_close "$bck_target"
+    c0rc_bck_info "$msg_prologue stats for '${TXT_COLOR_YELLOW}$luks_path${TXT_COLOR_NONE}':\n$(lsblk -ao SIZE,FSSIZE,FSTYPE,FSAVAIL,FSUSED,FSUSE% $luks_path)"
+
+    c0rc_bck_close $target_name
     if [ $? -ne 0 ]; then
-        c0rc_bck_warn "error while closing backup target device; backup target '${TXT_COLOR_YELLOW}$bck_target${TXT_COLOR_NONE}'"
+        c0rc_bck_warn "$msg_prologue error while closing backup target device"
         return 1
-    else
-        return 0
     fi
+
+    return 0
 }
 
 function c0rc_bck_run_system() {
@@ -720,6 +740,181 @@ function c0rc_bck_run_system() {
     fi
 }
 
+function c0rc_bck_run_ws_to() {
+    local target_name=""
+    while [ $# -gt 0 ]; do
+        case "$1" in
+        --target_name=?*)
+            target_name=${1#*=}
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            c0rc_err "unknown parameter '${TXT_COLOR_YELLOW}$1${TXT_COLOR_NONE}'"
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+        shift
+    done
+    if [ -z "$target_name" ]; then
+        c0rc_bck_err "parameter '${TXT_COLOR_YELLOW}--target_name${TXT_COLOR_NONE}' is missing"
+        return 1
+    fi
+
+    c0rc_bck_run_precond_check
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
+    local msg_prologue="[${TXT_COLOR_YELLOW}$C0RC_BCK_KIND_WS${TXT_COLOR_NONE}] [${TXT_COLOR_YELLOW}$target_name${TXT_COLOR_NONE}]:"
+
+    # open target {{{
+    local mount_point=""
+    local luks_uuid=""
+    local luks_path=""
+    c0rc_bck_open $target_name luks_uuid mount_point luks_path
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while opening backup target device"
+        return 1
+    fi
+    # }}}
+
+    # target root dir {{{
+    local target_ws_root="$mount_point/c0rc_ws"
+    sudo mkdir -p "$target_ws_root"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while creating target root dir"
+        c0rc_bck_close $target_name
+        return 1
+    fi
+    sudo chown "$(id -un)":"$(id -gn)" "$target_ws_root"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while tuning owning for target root dir"
+        c0rc_bck_close $target_name
+        return 1
+    fi
+    sudo chmod a-rwx "$target_ws_root" &&
+        sudo chmod ug+rwx "$target_ws_root"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while tuning perms for target root dir"
+        c0rc_bck_close $target_name
+        return 1
+    fi
+    # }}}
+
+    local salt="$(c0rc_gen_hex32bit)"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while generating salt"
+        c0rc_bck_close $target_name
+        return 1
+    fi
+
+    local exclusions_file=$(mktemp)
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while generating exclusions file"
+        c0rc_bck_close $target_name
+        return 1
+    fi
+    echo \
+        '/_backup/***
+/_desktop/***
+/_garbage/***
+/_media/_mus/***
+/_media/_music/***
+/_media/_os_iso/***
+/_media/_videos/@especial_secured/***
+/_media/_videos/@especial/***
+/_secv-legacy/***
+/_secv/***
+/_tools/***
+/_vm/***' >$exclusions_file
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while generating exclusions file"
+        c0rc_bck_close $target_name
+        return 1
+    fi
+    c0rc_bck_info "$msg_prologue exclusions:\n$TXT_COLOR_WARN$(cat -n $exclusions_file)$TXT_COLOR_NONE"
+
+    local datetime_str="$(date '+%Y%m%d_%H%M%S')_$salt"
+    local snapshots_dir="$target_ws_root/snapshots"
+    local current_snapshot_dir="$snapshots_dir/$datetime_str"
+    local latest_snapshot_lnk="$snapshots_dir/latest"
+
+    local logs_dir="$target_ws_root/logs/$C0RC_HH_COOKIE"
+    local log_file="$logs_dir/$datetime_str.log"
+
+    mkdir -p "$snapshots_dir" &&
+        mkdir -p "$current_snapshot_dir" &&
+        mkdir -p "$target_ws_root/logs" &&
+        mkdir -p "$logs_dir"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while creating dirs"
+        c0rc_bck_close $target_name
+        rm -f $exclusions_file
+        return 1
+    fi
+
+    local previous_snapshot_dir=""
+    local rsync_link_dest=""
+    local rsync_link_dest_val=""
+    if [ -d $latest_snapshot_lnk ]; then
+        previous_snapshot_dir=$(readlink "$latest_snapshot_lnk")
+        if [ $? -ne 0 ]; then
+            c0rc_bck_err "$msg_prologue error while reading link on previous snapshot"
+            c0rc_bck_close $target_name
+            rm -f $exclusions_file
+            return 1
+        fi
+        rsync_link_dest="--link-dest"
+        rsync_link_dest_val=$latest_snapshot_lnk
+    fi
+
+    c0rc_bck_info "$msg_prologue snapshot '${TXT_COLOR_YELLOW}$current_snapshot_dir${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+    rsync \
+        -a \
+        --delete \
+        --recursive \
+        --force \
+        --whole-file \
+        --sparse \
+        --log-file="$log_file" \
+        $([ -d $latest_snapshot_lnk ] && echo -n $rsync_link_dest "$rsync_link_dest_val") \
+        --exclude-from="$exclusions_file" \
+        --delete-excluded \
+        "$C0RC_WS_DIR/" \
+        "$current_snapshot_dir" &&
+        rm -f "$latest_snapshot_lnk" &&
+        ln -s "$current_snapshot_dir" "$latest_snapshot_lnk"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue snapshot '${TXT_COLOR_YELLOW}$current_snapshot_dir${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
+        c0rc_bck_close $target_name
+        rm -f $exclusions_file
+        return 1
+    else
+        c0rc_bck_info "$msg_prologue snapshot '${TXT_COLOR_YELLOW}$current_snapshot_dir${TXT_COLOR_NONE}': $C0RC_OP_OK"
+    fi
+
+    c0rc_bck_info "$msg_prologue stats for '${TXT_COLOR_YELLOW}$luks_path${TXT_COLOR_NONE}':\n$(lsblk -ao SIZE,FSSIZE,FSTYPE,FSAVAIL,FSUSED,FSUSE% $luks_path)"
+
+    c0rc_bck_close $target_name
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "$msg_prologue error while closing backup target device"
+        rm -f $exclusions_file
+        return 1
+    fi
+
+    rm -f $exclusions_file
+
+    c0rc_bck_info "$msg_prologue $C0RC_OP_OK"
+
+    return 0
+}
+
 function c0rc_bck_run_regular() {
     local kinds=''
     if [ $# -eq 1 ]; then
@@ -741,15 +936,17 @@ function c0rc_bck_run_regular() {
     local succeeded_kinds=''
     for knd in $(<<<$kinds); do
         c0rc_splitter
-        c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+        c0rc_bck_info "[${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}]: run regular backup $C0RC_OP_PROGRESS"
 
         local knd_status=1
         if [ "$knd" = "$C0RC_BCK_KIND_INSENSITIVE" ]; then
             c0rc_bck_run_insensitive && knd_status=0
         elif [ "$knd" = "$C0RC_BCK_KIND_SYSTEM" ]; then
             c0rc_bck_run_system && knd_status=0
+        elif [ "$knd" = "$C0RC_BCK_KIND_WS" ]; then
+            c0rc_bck_run_ws_to --target_name="$C0RC_BCK_WS_TARGET" && knd_status=0
         else
-            c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': specified kind is unsupported"
+            c0rc_bck_warn "[${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}]: run regular backup; specified kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}' not supported"
         fi
 
         if [ $knd_status -ne 0 ]; then
@@ -762,10 +959,10 @@ function c0rc_bck_run_regular() {
 
     c0rc_splitter
     for knd in $(<<<$succeeded_kinds); do
-        c0rc_bck_info "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_OK"
+        c0rc_bck_info "[${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}]: run regular backup $C0RC_OP_OK"
     done
     for knd in $(<<<$failed_kinds); do
-        c0rc_bck_warn "run regular backup; kind '${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
+        c0rc_bck_warn "[${TXT_COLOR_YELLOW}$knd${TXT_COLOR_NONE}]: run regular backup $C0RC_OP_FAIL"
     done
 
     if [ "$has_fail" = 'n' ]; then

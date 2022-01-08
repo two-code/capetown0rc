@@ -1,5 +1,5 @@
 function c0rc_sshgpg() {
-    # assumption, that gpg-agen already running
+    # assumption, that gpg-agent already running
     #
 
     local auth_socket="$(gpgconf --list-dirs agent-ssh-socket)"

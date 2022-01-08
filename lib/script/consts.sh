@@ -22,8 +22,9 @@ export readonly C0RC_OP_FAIL="... ${TXT_COLOR_RED}FAIL${TXT_COLOR_NONE}"
 # }}}
 
 # backup {{{
-export readonly C0RC_BCK_KIND_SYSTEM="system"
 export readonly C0RC_BCK_KIND_INSENSITIVE="insensitive"
+export readonly C0RC_BCK_KIND_SYSTEM="system"
+export readonly C0RC_BCK_KIND_WS="ws"
 
 export C0RC_BCK_OUTPUT_INIT_PARAMS="${C0RC_BCK_OUTPUT_INIT_PARAMS:-n}"
 
@@ -38,7 +39,7 @@ if [ -z $C0RC_BCK_INSENSITIVE_TARGETS ]; then
         C0RC_BCK_INSENSITIVE_TARGETS="bck3"
     else
         C0RC_BCK_INSENSITIVE_TARGETS=""
-        echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_INSENSITIVE_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_INSENSITIVE_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
@@ -50,11 +51,23 @@ if [ -z $C0RC_BCK_SYSTEM_TARGETS ]; then
         C0RC_BCK_SYSTEM_TARGETS="bck3"
     else
         C0RC_BCK_SYSTEM_TARGETS=""
-        echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_SYSTEM_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_SYSTEM_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
 export C0RC_BCK_SYSTEM_RETENTION="${C0RC_BCK_SYSTEM_RETENTION:-3}"
+
+export C0RC_BCK_WS_TARGET="${C0RC_BCK_WS_TARGET:-}"
+if [ -z $C0RC_BCK_WS_TARGET ]; then
+    if [ "$(hostname)" = "capetown0" ]; then
+        C0RC_BCK_WS_TARGET="bck3"
+    elif [ "$(hostname)" = "capetown2" ]; then
+        C0RC_BCK_WS_TARGET="bck3"
+    else
+        C0RC_BCK_WS_TARGET=""
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_TARGET${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+    fi
+fi
 
 export C0RC_BCK_REGULAR_PLAN_KINDS="${C0RC_BCK_REGULAR_PLAN_KINDS:-}"
 if [ -z $C0RC_BCK_REGULAR_PLAN_KINDS ]; then
@@ -64,7 +77,7 @@ if [ -z $C0RC_BCK_REGULAR_PLAN_KINDS ]; then
         C0RC_BCK_REGULAR_PLAN_KINDS="$C0RC_BCK_KIND_INSENSITIVE $C0RC_BCK_KIND_SYSTEM"
     else
         C0RC_BCK_REGULAR_PLAN_KINDS=""
-        echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_REGULAR_PLAN_KINDS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_REGULAR_PLAN_KINDS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 # }}}
@@ -129,7 +142,7 @@ fi
 
 export C0RC_SHELL_SALT="${C0RC_SHELL_SALT:-$(head -c 16 /dev/urandom | xxd -l 16 -p -c 16)}"
 if [ $? -ne 0 ]; then
-    echo -e "${TXT_COLOR_ORANGE}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} error while setting value of '${TXT_COLOR_YELLOW}C0RC_SHELL_SALT${TXT_COLOR_NONE}'" >&2
+    echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} error while setting value of '${TXT_COLOR_YELLOW}C0RC_SHELL_SALT${TXT_COLOR_NONE}'" >&2
 fi
 
 export C0RC_LUKS_DEFAULT_KEYSLOT="${C0RC_LUKS_DEFAULT_KEYSLOT:-4}"

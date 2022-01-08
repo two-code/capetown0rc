@@ -87,10 +87,21 @@ function c0rc_dir_seal() {
 }
 
 function c0rc_secrets_2fa_dir_seal() {
-    c0rc_dir_seal "$C0RC_SECRETS_DIR"
-    c0rc_dir_seal "$C0RC_2FA_DIR"
+    local result_status=0
 
-    return 0
+    c0rc_dir_seal "$C0RC_SECRETS_DIR"
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while sealing '${TXT_COLOR_YELLOW}$C0RC_SECRETS_DIR${TXT_COLOR_NONE}'"
+        result_status=1
+    fi
+
+    c0rc_dir_seal "$C0RC_2FA_DIR"
+    if [ $? -ne 0 ]; then
+        c0rc_warn "error while sealing '${TXT_COLOR_YELLOW}$C0RC_2FA_DIR${TXT_COLOR_NONE}'"
+        result_status=1
+    fi
+
+    return $result_status
 }
 
 function c0rc_secrets_dir_seal() {
@@ -466,7 +477,7 @@ function c0rc_secv_legacy_close() {
 
     return 0
 }
-# container_uuid_out
+
 function c0rc_luks_init_params() {
     while :; do
         case $1 in
@@ -483,7 +494,7 @@ function c0rc_luks_init_params() {
             shift
             break
             ;;
-        -?*)
+        -*)
             c0rc_err "unknown parameter '${TXT_COLOR_YELLOW}$1${TXT_COLOR_NONE}'"
             return 1
             ;;
