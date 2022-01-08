@@ -1056,6 +1056,8 @@ function c0rc_bck_restore_ws() {
     c0rc_bck_info "$msg_prologue snapshot '${TXT_COLOR_YELLOW}$current_snapshot_dir${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
     rsync \
         -a \
+        --delete \
+        --force \
         --whole-file \
         --sparse \
         --log-file="$log_file" \
