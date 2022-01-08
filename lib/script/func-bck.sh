@@ -38,7 +38,7 @@ function c0rc_bck_run_precond_check() {
         return 1
     fi
 
-    local c0rc_cmd=$(command -v c0rc 2>/dev/null)
+    c0rc_cmd=$(command -v c0rc 2>/dev/null)
     if [ ! -n "$c0rc_cmd" ]; then
         c0rc_bck_err "no command '${TXT_COLOR_YELLOW}c0rc${TXT_COLOR_NONE}' available; possibly, you need to install using 'go install github.com/two-code/capetown0rc.git/go' (or using make, if you have cloned repository)"
         return 1
@@ -404,6 +404,7 @@ function c0rc_bck_run_insensitive_to() {
         target="$1"
     fi
 
+    local c0rc_cmd=""
     c0rc_bck_run_precond_check
     if [ $? -ne 0 ]; then
         return 1
@@ -504,7 +505,7 @@ function c0rc_bck_run_insensitive_to() {
         sudo cp -aL /usr/share/keyrings "$save_loc/usr/share"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while copying"
-        sudo rm -fdrv "$save_loc"
+        sudo rm -fdr "$save_loc"
         popd >/dev/null
         sudo umount $mount_point
         sudo rm -d $mount_point
@@ -519,7 +520,7 @@ function c0rc_bck_run_insensitive_to() {
         xargs -I{} sudo cp -aL {} "$save_loc/home/.secrets/"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while copying"
-        sudo rm -fdrv "$save_loc"
+        sudo rm -fdr "$save_loc"
         popd >/dev/null
         sudo umount $mount_point
         sudo rm -d $mount_point
@@ -529,7 +530,7 @@ function c0rc_bck_run_insensitive_to() {
     sync -f
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while syncing fs"
-        sudo rm -fdrv "$save_loc"
+        sudo rm -fdr "$save_loc"
         popd >/dev/null
         sudo umount $mount_point
         sudo rm -d $mount_point
@@ -553,7 +554,7 @@ function c0rc_bck_run_insensitive_to() {
     sudo chattr +i -R "$save_loc"
     if [ $? -ne 0 ]; then
         c0rc_bck_err "error while setting read-only attr"
-        sudo rm -fdrv "$save_loc"
+        sudo rm -fdr "$save_loc"
         popd >/dev/null
         sudo umount $mount_point
         sudo rm -d $mount_point
@@ -594,6 +595,7 @@ function c0rc_bck_run_insensitive() {
         return 1
     fi
 
+    local c0rc_cmd=""
     c0rc_bck_run_precond_check
     if [ $? -ne 0 ]; then
         return 1
@@ -635,6 +637,7 @@ function c0rc_bck_run_system_to() {
         return 1
     fi
 
+    local c0rc_cmd=""
     c0rc_bck_run_precond_check
     if [ $? -ne 0 ]; then
         return 1
@@ -704,6 +707,7 @@ function c0rc_bck_run_system() {
         return 1
     fi
 
+    local c0rc_cmd=""
     c0rc_bck_run_precond_check
     if [ $? -ne 0 ]; then
         return 1
@@ -747,7 +751,7 @@ function c0rc_bck_ws_set_exclusion_file() {
         return 1
     fi
     echo \
-        '/_backup/***
+        '/_backup/ghs/backup-storage-data/$video/***
 /_desktop/***
 /_garbage/***
 /_media/_mus/***
@@ -793,6 +797,7 @@ function c0rc_bck_run_ws_to() {
         return 1
     fi
 
+    local c0rc_cmd=""
     c0rc_bck_run_precond_check
     if [ $? -ne 0 ]; then
         return 1
@@ -941,6 +946,7 @@ function c0rc_bck_restore_ws() {
         shift
     done
 
+    local c0rc_cmd=""
     c0rc_bck_run_precond_check
     if [ $? -ne 0 ]; then
         return 1
@@ -1089,6 +1095,7 @@ function c0rc_bck_run_regular() {
         return 1
     fi
 
+    local c0rc_cmd=""
     c0rc_bck_run_precond_check
     if [ $? -ne 0 ]; then
         return 1
@@ -1141,6 +1148,7 @@ function c0rc_bck_ls_system() {
         return 1
     fi
 
+    local c0rc_cmd=""
     c0rc_bck_run_precond_check
     if [ $? -ne 0 ]; then
         return 1
