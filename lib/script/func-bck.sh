@@ -915,6 +915,178 @@ function c0rc_bck_run_ws_to() {
     return 0
 }
 
+function c0rc_bck_restore_ws() {
+    local restore_path=""
+    while [ $# -gt 0 ]; do
+        case "$1" in
+        --restore_path)
+            restore_path=${1#*=}
+            ;;
+        --) shift break ;;
+        -*)
+            c0rc_err "unknown parameter '${TXT_COLOR_YELLOW}$1${TXT_COLOR_NONE}'"
+            return 1
+            ;;
+        *) break ;;
+        esac
+        shift
+    done
+
+    c0rc_bck_run_precond_check
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
+    local source_name=$C0RC_BCK_WS_TARGET
+    local msg_prologue="[${TXT_COLOR_YELLOW}restore${TXT_COLOR_NONE}] [${TXT_COLOR_YELLOW}$C0RC_BCK_KIND_WS${TXT_COLOR_NONE}] [${TXT_COLOR_YELLOW}$source_name${TXT_COLOR_NONE}]:"
+
+    # target dir {{{
+    if [ -z "$restore_path" ]; then
+        restore_path="$C0RC_WS_DIR"
+    fi
+    sudo mkdir -p "$restore_path"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while creating destination dir"
+        c0rc_bck_close $source_name
+        return 1
+    fi
+    sudo chown "$(id -un)":"$(id -gn)" "$restore_path"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while tuning owning for destination dir"
+        c0rc_bck_close $source_name
+        return 1
+    fi
+    sudo chmod a-rwx "$restore_path" &&
+        sudo chmod ug+rwx "$restore_path"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while tuning perms for destination dir"
+        c0rc_bck_close $source_name
+        return 1
+    fi
+    # }}}
+
+    # open source {{{
+    local mount_point=""
+    local luks_uuid=""
+    c0rc_bck_open $source_name luks_uuid mount_point
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while opening backup target device"
+        return 1
+    fi
+    # }}}
+
+    local source_ws_dir="$mount_point/c0rc_ws"
+
+    local salt="$(c0rc_gen_hex32bit)"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while generating salt"
+        c0rc_bck_close $source_name
+        return 1
+    fi
+
+    local exclusions_file=$(mktemp)
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while generating exclusions file"
+        c0rc_bck_close $source_name
+        return 1
+    fi
+    echo \
+        '/_backup/***
+/_desktop/***
+/_garbage/***
+/_media/_mus/***
+/_media/_music/***
+/_media/_os_iso/***
+/_media/_videos/@especial_secured/***
+/_media/_videos/@especial/***
+/_secv-legacy/***
+/_secv/***
+/_tools/***
+/_vm/***' >$exclusions_file
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while generating exclusions file"
+        c0rc_bck_close $source_name
+        return 1
+    fi
+    c0rc_bck_info "$msg_prologue exclusions:\n$TXT_COLOR_WARN$(cat -n $exclusions_file)$TXT_COLOR_NONE"
+
+    local datetime_str="$(date '+%Y%m%d_%H%M%S')_$salt"
+    local snapshots_dir="$source_ws_dir/snapshots"
+    local latest_snapshot_lnk="$snapshots_dir/latest"
+    local logs_dir="${restore_path}_ws-restore/logs/$C0RC_HH_COOKIE"
+    local log_file="$logs_dir/$datetime_str.log"
+
+    mkdir -p "$logs_dir"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while creating log dir '${TXT_COLOR_YELLOW}$logs_dir${TXT_COLOR_NONE}'"
+        c0rc_bck_close $source_name
+        rm -f $exclusions_file
+        return 1
+    fi
+
+    local current_snapshot_dir=""
+    if [ -d $latest_snapshot_lnk ]; then
+        current_snapshot_dir=$(readlink "$latest_snapshot_lnk")
+        if [ $? -ne 0 ]; then
+            c0rc_bck_err "$msg_prologue error while reading link to latest snapshot"
+            c0rc_bck_close $source_name
+            rm -f $exclusions_file
+            return 1
+        fi
+    else
+        c0rc_bck_err "$msg_prologue there is no any latest snapshot"
+        c0rc_bck_close $source_name
+        rm -f $exclusions_file
+        return 1
+    fi
+
+    c0rc_bck_info "$msg_prologue snapshot '${TXT_COLOR_YELLOW}$current_snapshot_dir${TXT_COLOR_NONE}': need for your confirmation: $C0RC_OP_PROGRESS"
+    echo -n "${TXT_COLOR_WARN}is it ok, continue? (y/n) ... " &&
+        read -qs -t 15
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue no confirmation received from you; cancel"
+        c0rc_bck_close $source_name
+        rm -f $exclusions_file
+        return 1
+    fi
+    c0rc_bck_info "$msg_prologue need for your confirmation: $C0RC_OP_OK"
+
+    c0rc_bck_info "$msg_prologue snapshot '${TXT_COLOR_YELLOW}$current_snapshot_dir${TXT_COLOR_NONE}': $C0RC_OP_PROGRESS"
+    rsync \
+        -a \
+        --delete \
+        --recursive \
+        --force \
+        --whole-file \
+        --sparse \
+        --log-file="$log_file" \
+        --exclude-from="$exclusions_file" \
+        --delete-excluded \
+        "$current_snapshot_dir/" \
+        "$restore_path"
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue snapshot '${TXT_COLOR_YELLOW}$current_snapshot_dir${TXT_COLOR_NONE}': $C0RC_OP_FAIL"
+        c0rc_bck_close $source_name
+        rm -f $exclusions_file
+        return 1
+    else
+        c0rc_bck_info "$msg_prologue snapshot '${TXT_COLOR_YELLOW}$current_snapshot_dir${TXT_COLOR_NONE}': $C0RC_OP_OK"
+    fi
+
+    c0rc_bck_close $source_name
+    if [ $? -ne 0 ]; then
+        c0rc_bck_warn "$msg_prologue error while closing backup target device"
+        rm -f $exclusions_file
+        return 1
+    fi
+
+    rm -f $exclusions_file
+
+    c0rc_bck_info "$msg_prologue $C0RC_OP_OK"
+
+    return 0
+}
+
 function c0rc_bck_run_regular() {
     local kinds=''
     if [ $# -eq 1 ]; then
