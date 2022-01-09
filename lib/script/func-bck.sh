@@ -744,27 +744,32 @@ function c0rc_bck_run_system() {
     fi
 }
 
-function c0rc_bck_ws_set_exclusion_file() {
+function c0rc_bck_ws_set_restore_exclusion_file() {
     exclusions_file=$(mktemp)
     if [ $? -ne 0 ]; then
-        c0rc_bck_err "$msg_prologue error while generating exclusions file"
+        c0rc_bck_err "$msg_prologue error while generating exclusions file; unable to create tmp file"
         return 1
     fi
-    echo \
-        '/_backup/ghs/backup-storage-data/$video/***
-/_desktop/***
-/_garbage/***
-/_media/_mus/***
-/_media/_music/***
-/_media/_os_iso/***
-/_media/_videos/@especial_secured/***
-/_media/_videos/@especial/***
-/_secv-legacy/***
-/_secv/***
-/_tools/***
-/_vm/***' >$exclusions_file
+
+    echo -n "$C0RC_BCK_WS_RUN_EXCLUSIONS" >$exclusions_file
     if [ $? -ne 0 ]; then
-        c0rc_bck_err "$msg_prologue error while generating exclusions file"
+        c0rc_bck_err "$msg_prologue error while writing out exclusions to tmp file"
+        return 1
+    fi
+
+    return 0
+}
+
+function c0rc_bck_ws_set_run_exclusion_file() {
+    exclusions_file=$(mktemp)
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while generating exclusions file; unable to create tmp file"
+        return 1
+    fi
+
+    echo -n "$C0RC_BCK_WS_RUN_EXCLUSIONS" >$exclusions_file
+    if [ $? -ne 0 ]; then
+        c0rc_bck_err "$msg_prologue error while writing out exclusions to tmp file"
         return 1
     fi
 
@@ -847,7 +852,7 @@ function c0rc_bck_run_ws_to() {
     fi
 
     local exclusions_file=""
-    c0rc_bck_ws_set_exclusion_file
+    c0rc_bck_ws_set_run_exclusion_file
     if [ $? -ne 0 ]; then
         c0rc_bck_close $target_name
         return 1
@@ -1000,7 +1005,7 @@ function c0rc_bck_restore_ws() {
     fi
 
     local exclusions_file=""
-    c0rc_bck_ws_set_exclusion_file
+    c0rc_bck_ws_set_restore_exclusion_file
     if [ $? -ne 0 ]; then
         c0rc_bck_close $source_name
         return 1

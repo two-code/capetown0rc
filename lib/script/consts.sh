@@ -69,6 +69,50 @@ if [ -z $C0RC_BCK_WS_TARGET ]; then
     fi
 fi
 
+export C0RC_BCK_WS_RESTORE_EXCLUSIONS="${C0RC_BCK_WS_RESTORE_EXCLUSIONS:-}"
+if [ -z $C0RC_BCK_WS_RESTORE_EXCLUSIONS ]; then
+    if [ "$(hostname)" = "capetown0" ]; then
+        C0RC_BCK_WS_RESTORE_EXCLUSIONS='/_backup/***
+/_desktop/***
+/_garbage/***
+/_media/***
+/_secv-legacy/***
+/_secv/***
+/_tools/***
+/_vm/***'
+    elif [ "$(hostname)" = "capetown2" ]; then
+        C0RC_BCK_WS_RESTORE_EXCLUSIONS='/_desktop/***
+/_garbage/***
+/_vm/***'
+    else
+        C0RC_BCK_WS_RESTORE_EXCLUSIONS="/***"
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_RESTORE_EXCLUSIONS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+    fi
+fi
+
+export C0RC_BCK_WS_RUN_EXCLUSIONS="${C0RC_BCK_WS_RUN_EXCLUSIONS:-}"
+if [ -z $C0RC_BCK_WS_RUN_EXCLUSIONS ]; then
+    if [ "$(hostname)" = "capetown0" ]; then
+        C0RC_BCK_WS_RUN_EXCLUSIONS='/_backup/ghs/backup-storage-data/$video/***
+/_garbage/***
+/_media/_mus/***
+/_media/_music/***
+/_media/_os_iso/***
+/_media/_videos/@especial_secured/***
+/_media/_videos/@especial/***
+/_secv-legacy/***
+/_secv/***
+/_vm/***'
+    elif [ "$(hostname)" = "capetown2" ]; then
+        C0RC_BCK_WS_RUN_EXCLUSIONS='
+/_media/_os_iso/***
+/_vm/***'
+    else
+        C0RC_BCK_WS_RUN_EXCLUSIONS="/***"
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_RUN_EXCLUSIONS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+    fi
+fi
+
 export C0RC_BCK_REGULAR_PLAN_KINDS="${C0RC_BCK_REGULAR_PLAN_KINDS:-}"
 if [ -z $C0RC_BCK_REGULAR_PLAN_KINDS ]; then
     if [ "$(hostname)" = "capetown0" ]; then
