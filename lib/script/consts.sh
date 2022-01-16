@@ -9,11 +9,15 @@ export TXT_COLOR_YELLOW="${TXT_COLOR_YELLOW:-\033[0;33m}"
 export TXT_COLOR_ERR="${TXT_COLOR_ERR:-$TXT_COLOR_RED}"
 export TXT_COLOR_WARN="${TXT_COLOR_WARN:-$TXT_COLOR_ORANGE}"
 
-export TXT_SPLITTER_COLOR="${TXT_SPLITTER_COLOR:-\033[38;5;147m}"
-export TXT_SPLITTER="${TXT_SPLITTER:-▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒}"
+export TXT_SPLITTER_COLOR="${TXT_SPLITTER_COLOR:-\033[38;5;63m}"
+export TXT_SPLITTER="${TXT_SPLITTER:-════════════════════════════════════════════════════════════════════════════════════════════════════}"
 
+export C0RC_MSG_CNT="${C0RC_MSG_CNT:-0}"
+
+# GDK consts {{{
 export GDK_SCALE=1.0
 export GDK_DPI_SCALE=1.0
+# }}}
 
 # op status {{{
 export readonly C0RC_OP_PROGRESS="..."
@@ -39,7 +43,7 @@ if [ -z $C0RC_BCK_INSENSITIVE_TARGETS ]; then
         C0RC_BCK_INSENSITIVE_TARGETS="bck3"
     else
         C0RC_BCK_INSENSITIVE_TARGETS=""
-        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_INSENSITIVE_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_INSENSITIVE_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
@@ -51,7 +55,7 @@ if [ -z $C0RC_BCK_SYSTEM_TARGETS ]; then
         C0RC_BCK_SYSTEM_TARGETS="bck3"
     else
         C0RC_BCK_SYSTEM_TARGETS=""
-        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_SYSTEM_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_SYSTEM_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
@@ -65,7 +69,7 @@ if [ -z $C0RC_BCK_WS_TARGET ]; then
         C0RC_BCK_WS_TARGET="bck3"
     else
         C0RC_BCK_WS_TARGET=""
-        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_TARGET${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_TARGET${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
@@ -86,7 +90,7 @@ if [ -z $C0RC_BCK_WS_RESTORE_EXCLUSIONS ]; then
 /_vm/***'
     else
         C0RC_BCK_WS_RESTORE_EXCLUSIONS="/***"
-        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_RESTORE_EXCLUSIONS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_RESTORE_EXCLUSIONS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
@@ -109,7 +113,7 @@ if [ -z $C0RC_BCK_WS_RUN_EXCLUSIONS ]; then
 /_vm/***'
     else
         C0RC_BCK_WS_RUN_EXCLUSIONS="/***"
-        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_RUN_EXCLUSIONS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_RUN_EXCLUSIONS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
@@ -121,7 +125,7 @@ if [ -z $C0RC_BCK_REGULAR_PLAN_KINDS ]; then
         C0RC_BCK_REGULAR_PLAN_KINDS="$C0RC_BCK_KIND_INSENSITIVE $C0RC_BCK_KIND_SYSTEM"
     else
         C0RC_BCK_REGULAR_PLAN_KINDS=""
-        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_REGULAR_PLAN_KINDS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_REGULAR_PLAN_KINDS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 # }}}
@@ -141,7 +145,7 @@ if [ -z $C0RC_SECV_IMG ]; then
         C0RC_SECV_IMG="$HOME/.secv-c2.img"
     else
         C0RC_SECV_IMG=""
-        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_IMG${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_IMG${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
@@ -153,7 +157,7 @@ if [ -z $C0RC_SECV_LOOP_NAME ]; then
         C0RC_SECV_LOOP_NAME="loop941"
     else
         C0RC_SECV_LOOP_NAME=""
-        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
@@ -165,7 +169,7 @@ if [ -z $C0RC_SECV_LUKS_CONTAINER_NAME ]; then
         C0RC_SECV_LUKS_CONTAINER_NAME="secv-c2"
     else
         C0RC_SECV_LUKS_CONTAINER_NAME=""
-        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
+        echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
     fi
 fi
 
@@ -186,7 +190,7 @@ fi
 
 export C0RC_SHELL_SALT="${C0RC_SHELL_SALT:-$(head -c 16 /dev/urandom | xxd -l 16 -p -c 16)}"
 if [ $? -ne 0 ]; then
-    echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} error while setting value of '${TXT_COLOR_YELLOW}C0RC_SHELL_SALT${TXT_COLOR_NONE}'" >&2
+    echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} error while setting value of '${TXT_COLOR_YELLOW}C0RC_SHELL_SALT${TXT_COLOR_NONE}'" >&2
 fi
 
 export C0RC_LUKS_DEFAULT_KEYSLOT="${C0RC_LUKS_DEFAULT_KEYSLOT:-4}"
@@ -222,17 +226,17 @@ function c0rc_set_hh_cookie() {
     if [ -f "$HOME/.c0rc-hh-cookie" ]; then
         C0RC_HH_COOKIE=$(cat "$HOME/.c0rc-hh-cookie")
         if [ $? -ne 0 ]; then
-            echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
+            echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERR:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
         fi
     else
         local cookie_tmp="$(head -c 8 /dev/urandom | xxd -l 8 -p -c 8)_$(hostname)_$(whoami)"
         cookie_tmp="$(hostname)_$(whoami)_$(sha256 <<<$cookie_tmp | xxd -p -c 32 | head -c 12)"
         if [ $? -ne 0 ]; then
-            echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
+            echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERR:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
         else
             echo -n "$cookie_tmp" >"$HOME/.c0rc-hh-cookie"
             if [ $? -ne 0 ]; then
-                echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WARN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
+                echo -e "${TXT_COLOR_ERR}[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERR:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_HH_COOKIE${TXT_COLOR_NONE}'" >&2
             else
                 C0RC_HH_COOKIE=$cookie_tmp
             fi
