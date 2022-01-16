@@ -10,7 +10,7 @@ export TXT_COLOR_ERR="${TXT_COLOR_ERR:-$TXT_COLOR_RED}"
 export TXT_COLOR_WARN="${TXT_COLOR_WARN:-$TXT_COLOR_ORANGE}"
 
 export TXT_SPLITTER_COLOR="${TXT_SPLITTER_COLOR:-\033[38;5;147m}"
-export TXT_SPLITTER="${TXT_SPLITTER:---------------------------------------------------------------------------------}"
+export TXT_SPLITTER="${TXT_SPLITTER:-▒▒-▒▒▒-▒▒-▒▒▒-▒▒-▒▒▒-▒▒-▒▒▒-▒▒-▒▒▒-▒▒-▒▒▒-▒▒-▒▒▒-▒▒-▒▒▒-▒▒-▒▒▒-▒▒-▒▒▒-▒▒-▒▒▒}"
 
 export GDK_SCALE=1.0
 export GDK_DPI_SCALE=1.0

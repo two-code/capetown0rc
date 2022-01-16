@@ -146,7 +146,7 @@ function c0rc_apt_upgrade() {
 
         c0rc_info "non-held upgrade: $C0RC_OP_PROGRESS"
         ((offset = 1))
-        ((part_size = 23))
+        ((part_size = 79))
         ((part_num = 1))
         while true; do
             local pkgs_part=$(echo $unhold_upgradable_pkgs | tail -n +"$offset" | head -n "$part_size" | tr '\n' ' ')
