@@ -491,8 +491,10 @@ function c0rc_bck_run_insensitive_to() {
         sudo cp -aL /etc/apt/sources.list.d "$save_loc/etc/apt/" &&
         sudo cp -aL /etc/crypttab "$save_loc/etc/" &&
         sudo cp -aL /etc/default "$save_loc/etc/" &&
+        sudo cp -aL /etc/dnsmasq* "$save_loc/etc/" &&
         sudo cp -aL /etc/environment "$save_loc/etc/" &&
         sudo cp -aL /etc/fstab "$save_loc/etc/" &&
+        sudo cp -aL /etc/resolv* "$save_loc/etc/" &&
         sudo cp -aL /etc/sddm "$save_loc/etc/" &&
         sudo cp -aL /etc/sddm.conf "$save_loc/etc/" &&
         sudo cp -aL /etc/sddm.conf.d "$save_loc/etc/" &&
