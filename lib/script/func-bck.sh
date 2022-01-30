@@ -464,9 +464,10 @@ function c0rc_bck_run_insensitive_to() {
         sudo mkdir -p "$save_loc/etc/apt" &&
         sudo mkdir -p "$save_loc/etc/apt/sources.list.d" &&
         sudo mkdir -p "$save_loc/etc/ssh" &&
-        sudo mkdir -p "$save_loc/home/.secrets" &&
         sudo mkdir -p "$save_loc/home/.gnupg" &&
+        sudo mkdir -p "$save_loc/home/.secrets" &&
         sudo mkdir -p "$save_loc/home/workspace/_backup/os-settings" &&
+        sudo mkdir -p "$save_loc/home/workspace/_garbage" &&
         sudo mkdir -p "$save_loc/root" &&
         sudo mkdir -p "$save_loc/usr/share/keyrings" &&
         sudo cp -aL ~/.2fa "$save_loc/home/" &&
@@ -483,6 +484,7 @@ function c0rc_bck_run_insensitive_to() {
         sudo cp -aL ~/.zsh_history "$save_loc/home/" &&
         sudo cp -aL ~/.zshrc "$save_loc/home/" &&
         sudo cp -aL ~/workspace/_backup/os-settings "$save_loc/home/workspace/_backup/" &&
+        sudo cp -aL ~/workspace/_garbage/desktop-background "$save_loc/home/workspace/_garbage/" &&
         sudo cp -aL ~/workspace/corsair-keyboard.ckb "$save_loc/home/workspace/" &&
         sudo cp -aL ~/workspace/logitech-default.gpfl "$save_loc/home/workspace/" &&
         sudo cp -aL ~/workspace/my-ublock-* "$save_loc/home/workspace/" &&
