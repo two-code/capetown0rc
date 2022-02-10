@@ -18,6 +18,17 @@ function gg_ok() {
     return 0
 }
 
+function gg_refname() {
+    local ref_name="$(git rev-parse --abbrev-ref HEAD)"
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
+    print $ref_name
+
+    return 0
+}
+
 function gg_cmt() {
     local ref_name=""
     local commit_msg=""
