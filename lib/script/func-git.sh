@@ -19,11 +19,30 @@ function gg_ok() {
 }
 
 function gg_cmt() {
+    local ref_name=""
+    local commit_msg=""
+
+    if [ $# -eq 2 ]; then
+        ref_name="$1"
+        commit_msg="$2"
+    elif [ $# -eq 1 ]; then
+        commit_msg="$1"
+
+        ref_name="$(git rev-parse --abbrev-ref HEAD)"
+        if [ $? -ne 0 ]; then
+            gg_err "error while getting HEAD reference name"
+            return 1
+        fi
+    else
+        gg_err "one or two argument expected"
+        return 1
+    fi
+
     git add --all &&
-        git commit -m "$2" --allow-empty &&
-        git push origin HEAD:$1
+        git commit -m "$commit_msg" --allow-empty &&
+        git push origin HEAD:$ref_name
     if [ $? -ne 0 ]; then
-        gg_err "error while comitting"
+        gg_err "error while comitting/pushing"
         return 1
     fi
 
