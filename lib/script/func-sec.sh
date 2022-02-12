@@ -479,7 +479,7 @@ function c0rc_secv_legacy_close() {
 }
 
 function c0rc_luks_init_params() {
-    while :; do
+    while [ $# -gt 0 ]; do
         case $1 in
         --mount_point=?*)
             mount_point=${1#*=}
