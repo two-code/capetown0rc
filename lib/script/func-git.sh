@@ -142,3 +142,21 @@ function gg_ls_tag() {
 
     return 0
 }
+
+function gg_last_ver_tag() {
+    if [ $# -ne 0 ]; then
+        gg_err "no args expected"
+        return 0
+    fi
+
+    git tag --sort="-version:refname" --list 'v*' | head -n1
+
+    if [ $? -ne 0 ]; then
+        gg_err "error while listing tags"
+        return 1
+    fi
+
+    gg_ok
+
+    return 0
+}
