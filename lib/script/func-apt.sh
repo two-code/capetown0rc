@@ -127,6 +127,36 @@ function c0rc_apt_upgradable_pkgs_names() {
 }
 
 function c0rc_apt_upgrade() {
+    ((part_size = 79))
+    ((part_num = 0))
+    local dry_run="n"
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+        --dry_run)
+            dry_run="y"
+            ;;
+        --part_num=?*)
+            ((part_num = ${1#*=}))
+            ;;
+        --part_size=?*)
+            ((part_size = ${1#*=}))
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            c0rc_err "unknown parameter '${TXT_COLOR_YELLOW}$1${TXT_COLOR_NONE}'"
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+        shift
+    done
+
     c0rc_info "update and check: $C0RC_OP_PROGRESS"
     sudo apt-get update && sudo apt-get check
     if [ $? -ne 0 ]; then
@@ -146,21 +176,30 @@ function c0rc_apt_upgrade() {
 
         c0rc_info "non-held upgrade: $C0RC_OP_PROGRESS"
         ((offset = 1))
-        ((part_size = 79))
-        ((part_num = 1))
+        ((current_part_num = 1))
         while true; do
             local pkgs_part=$(echo $unhold_upgradable_pkgs | tail -n +"$offset" | head -n "$part_size" | tr '\n' ' ')
             if [ -n "$pkgs_part" ]; then
                 c0rc_splitter
-                c0rc_info "upgrade part $part_num:\n$(echo $pkgs_part | cat -n)"
-                sudo apt-get -y "$@" install $(echo -n $pkgs_part)
-                if [ $? -ne 0 ]; then
-                    c0rc_err "error while upgrading packages (see msgs above)"
-                    return 1
+
+                if [ $part_num -eq 0 ] || [ $part_num -eq $current_part_num ]; then
+                    c0rc_info "upgrade part $current_part_num (part size $part_size):\n$(echo $pkgs_part | cat -n)"
+                    local apt_get_args=""
+                    if [ "$dry_run" = "y" ]; then
+                        apt_get_args="--dry-run"
+                    fi
+
+                    sudo apt-get -y $apt_get_args install $(echo -n $pkgs_part)
+                    if [ $? -ne 0 ]; then
+                        c0rc_err "error while upgrading packages (see msgs above)"
+                        return 1
+                    fi
+                else
+                    c0rc_warn "part $current_part_num is skipping"
                 fi
 
                 ((offset = offset + part_size))
-                ((part_num++))
+                ((current_part_num++))
 
                 continue
             fi
