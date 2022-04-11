@@ -11,10 +11,10 @@ alias __d-prune='docker system prune'
 alias __sht='shutdown -P now'
 alias __rbt='shutdown --reboot now'
 
-alias __m8='microk8s'
-alias __m8kctl='microk8s kubectl'
-alias __kctl='kubectl'
-alias __k8='kubectl'
+alias mi='microk8s'
+alias mikk='microk8s kubectl'
+alias kk='kubectl'
+alias k8='kubectl'
 
 alias __go-vet='go mod tidy && go mod vendor && go vet ./...'
 
