@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mpr="/mnt/cap2"
+mpr="/mnt/chroot_point"
 
 mkdir -p $mpr
 
