@@ -1,0 +1,11 @@
+#!/bin/bash
+
+mpr="/mnt/cap2"
+
+umount -l $mpr/run
+umount -l $mpr/run/udev
+umount -l $mpr/sys
+umount -l $mpr/sys/firmware/efi/efivars
+umount -l $mpr/dev
+umount -l $mpr/dev/pts
+umount -l $mpr/proc

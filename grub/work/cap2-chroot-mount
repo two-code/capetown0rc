@@ -1,0 +1,26 @@
+#!/bin/bash
+
+mpr="/mnt/cap2"
+
+mkdir -p $mpr
+
+mkdir $mpr/run
+mkdir $mpr/run/udev
+mkdir $mpr/sys
+mkdir -p $mpr/sys/firmware/efi/efivars
+mkdir $mpr/dev
+mkdir $mpr/dev/pts
+mkdir $mpr/proc
+
+mount --bind /run $mpr/run
+mount --bind /run/udev $mpr/run/udev
+mount --bind /sys $mpr/sys
+mount --bind /sys/firmware/efi/efivars $mpr/sys/firmware/efi/efivars
+mount --bind /dev $mpr/dev
+mount --bind /dev/pts $mpr/dev/pts
+mount -t proc /proc $mpr/proc
+
+# mount --make-rslave /mnt/cap2/dev
+# mount --make-rslave /mnt/cap2/run/udev
+# mount --make-rslave /mnt/cap2/sys
+# mount --make-rslave /mnt/cap2/dev
