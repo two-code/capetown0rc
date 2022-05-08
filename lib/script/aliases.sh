@@ -20,4 +20,4 @@ alias __go-vet='go mod tidy && go mod vendor && go vet ./...'
 
 alias __ps='ps -eLfMlyZ kuid,pid --cumulative'
 
-alias ww_lsblk='sudo lsblk --sort PARTLABEL -o NAME,SIZE,PHY-SEC,LOG-SEC,RA,WSAME,FSTYPE,TYPE,UUID,PARTUUID,PARTLABEL,MOUNTPOINT'
+alias ww_lsblk='sudo lsblk --sort PARTLABEL -o NAME,SIZE,FSAVAIL,PHY-SEC,LOG-SEC,FSTYPE,TYPE,UUID,PARTUUID,PARTLABEL,MOUNTPOINT'
