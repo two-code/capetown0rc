@@ -1,6 +1,6 @@
 
 # Global Property
-title-text: ""
+title-text: "cap0"
 desktop-image: "background.png"
 desktop-color: "#2f5595"
 terminal-font: "Unifont Regular 22"
