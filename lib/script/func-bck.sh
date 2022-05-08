@@ -488,7 +488,6 @@ function c0rc_bck_run_insensitive_to() {
         sudo cp -aL ~/workspace/corsair-keyboard.ckb "$save_loc/home/workspace/" &&
         sudo cp -aL ~/workspace/logitech-default.gpfl "$save_loc/home/workspace/" &&
         sudo cp -aL ~/workspace/my-ublock-* "$save_loc/home/workspace/" &&
-        sudo cp -aL /boot/grub/themes "$save_loc/boot/grub/" &&
         sudo cp -aL /etc/apt/sources.list "$save_loc/etc/apt/" &&
         sudo cp -aL /etc/apt/sources.list.d "$save_loc/etc/apt/" &&
         sudo cp -aL /etc/crypttab "$save_loc/etc/" &&
