@@ -20,4 +20,6 @@ fi
 
 PATH="${C0RC_BIN_DIR}:${HOME}/go/bin:${PATH}"
 
-c0rc_sshgpg
+if [ "$(id -un)" = "vitalik" ]; then
+    c0rc_sshgpg
+fi
