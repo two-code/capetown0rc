@@ -40,7 +40,7 @@ if [ -z $C0RC_BCK_INSENSITIVE_TARGETS ]; then
     if [ "$(hostname)" = "capetown0" ]; then
         C0RC_BCK_INSENSITIVE_TARGETS="bck7 bck4 bck3"
     elif [ "$(hostname)" = "capetown2" ]; then
-        C0RC_BCK_INSENSITIVE_TARGETS="bck3"
+        C0RC_BCK_INSENSITIVE_TARGETS="bck3 bck8"
     else
         C0RC_BCK_INSENSITIVE_TARGETS=""
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_INSENSITIVE_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
@@ -52,7 +52,7 @@ if [ -z $C0RC_BCK_SYSTEM_TARGETS ]; then
     if [ "$(hostname)" = "capetown0" ]; then
         C0RC_BCK_SYSTEM_TARGETS="bck7 bck4"
     elif [ "$(hostname)" = "capetown2" ]; then
-        C0RC_BCK_SYSTEM_TARGETS="bck3"
+        C0RC_BCK_SYSTEM_TARGETS="bck8 bck3"
     else
         C0RC_BCK_SYSTEM_TARGETS=""
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_SYSTEM_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
