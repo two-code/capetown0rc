@@ -21,5 +21,14 @@ alias ww_ps='ps -eLfMlyZ kuid,pid --cumulative'
 
 alias ww_lsblk='sudo lsblk --sort PARTLABEL -o NAME,PARTLABEL,LABEL,SIZE,FSAVAIL,PHY-SEC,LOG-SEC,FSTYPE,TYPE,UUID,PARTUUID,MOUNTPOINT'
 alias ww_lsblk_short='sudo lsblk --sort PARTLABEL -o NAME,PARTLABEL,LABEL,SIZE,PARTUUID,MOUNTPOINT'
+
 alias ww_vpn_up='sudo route add -net 192.168.3.0/24 gw 192.168.4.1 metric 2; sudo route add default gw 192.168.4.1 metric 2; nmcli c up cd/main-ovpn; c0rc_info "sleep for 5 secs ..."; sleep 5; sudo systemctl restart dnsmasq.service && c0rc_info "done"'
 alias ww_vpn_down='nmcli c down cd/main-ovpn'
+
+if [ "$(hostname)" = "capetown0" ]; then
+    alias ww_mount_cap2='sshfs cap2:/home/vitalik /media/vitalik/cap2-home-vitalik && ll /media/vitalik/cap2-home-vitalik && c0rc_info done'
+    alias ww_umount_cap2='sudo sync -f; sudo umount /media/vitalik/cap2-home-vitalik && c0rc_info done'
+elif [ "$(hostname)" = "capetown2" ]; then
+    alias ww_mount_cap0='sshfs cap0:/home/vitalik /media/vitalik/cap0-home-vitalik && ll /media/vitalik/cap0-home-vitalik && c0rc_info done'
+    alias ww_umount_cap0='sudo sync -f; sudo umount /media/vitalik/cap0-home-vitalik && c0rc_info done'
+fi
