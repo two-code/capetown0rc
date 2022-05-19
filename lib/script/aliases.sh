@@ -13,7 +13,7 @@ alias ww_rbt='shutdown --reboot now'
 
 alias ww_mi='microk8s'
 alias ww_mik='microk8s kubectl'
-alias kk='kubectl'
+alias kk='kubecolor'
 
 alias ww_go-vet='go mod tidy && go mod vendor && go vet ./...'
 
