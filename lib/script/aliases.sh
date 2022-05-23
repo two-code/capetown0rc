@@ -30,5 +30,6 @@ if [ "$(hostname)" = "capetown0" ]; then
     alias ww_umount_cap2='sudo sync -f; sudo umount /media/vitalik/cap2-home-vitalik && c0rc_info done'
 elif [ "$(hostname)" = "capetown2" ]; then
     alias ww_mount_cap0='sshfs cap0:/home/vitalik /media/vitalik/cap0-home-vitalik && ll /media/vitalik/cap0-home-vitalik && c0rc_info done'
+    alias ww_mount_cap0_beeline='sshfs cap0_beeline:/home/vitalik /media/vitalik/cap0-home-vitalik && ll /media/vitalik/cap0-home-vitalik && c0rc_info done'
     alias ww_umount_cap0='sudo sync -f; sudo umount /media/vitalik/cap0-home-vitalik && c0rc_info done'
 fi
