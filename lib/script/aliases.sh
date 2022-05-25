@@ -26,10 +26,15 @@ alias ww_vpn_up='sudo route add -net 192.168.3.0/24 gw 192.168.4.1 metric 2; sud
 alias ww_vpn_down='nmcli c down cd/main-ovpn'
 
 if [ "$(hostname)" = "capetown0" ]; then
-    alias ww_mount_cap2='sshfs cap2:/home/vitalik /media/vitalik/cap2-home-vitalik && ll /media/vitalik/cap2-home-vitalik && c0rc_info done'
-    alias ww_umount_cap2='sudo sync -f; sudo umount /media/vitalik/cap2-home-vitalik && c0rc_info done'
+    alias ww_cap2_home_mount='sshfs cap2:/home/vitalik /media/vitalik/cap2-home-vitalik && ll /media/vitalik/cap2-home-vitalik && c0rc_info done'
+    alias ww_cap2_home_umount='sudo sync -f; sudo umount /media/vitalik/cap2-home-vitalik && c0rc_info done'
 elif [ "$(hostname)" = "capetown2" ]; then
-    alias ww_mount_cap0='sshfs cap0:/home/vitalik /media/vitalik/cap0-home-vitalik && ll /media/vitalik/cap0-home-vitalik && c0rc_info done'
-    alias ww_mount_cap0_beeline='sshfs cap0_beeline:/home/vitalik /media/vitalik/cap0-home-vitalik && ll /media/vitalik/cap0-home-vitalik && c0rc_info done'
-    alias ww_umount_cap0='sudo sync -f; sudo umount /media/vitalik/cap0-home-vitalik && c0rc_info done'
+    alias ww_cap0_home_mount='sshfs cap0:/home/vitalik /media/vitalik/cap0-home-vitalik && ll /media/vitalik/cap0-home-vitalik && c0rc_info done'
+    alias ww_cap0_home_mount_beeline='sshfs cap0_beeline:/home/vitalik /media/vitalik/cap0-home-vitalik && ll /media/vitalik/cap0-home-vitalik && c0rc_info done'
+    alias ww_cap0_home_umount='sudo sync -f; sudo umount /media/vitalik/cap0-home-vitalik && c0rc_info done'
+fi
+
+if [ "$(hostname)" = "capetown0" ]; then
+    alias ww_cap2_mount='sudo cryptsetup open "$(realpath /dev/disk/by-partlabel/cap2)" cap2 && sudo vgscan && sudo vgchange -ay && sudo mkdir -p /media/vitalik/cap2 && sudo chown vitalik:vitalik /media/vitalik/cap2 && sudo mount -t xfs /dev/capetown2/root /media/vitalik/cap2/ && c0rc_info "done"'
+    alias ww_cap2_umount='sudo sync -f && sudo umount /media/vitalik/cap2 && sudo vgchange -an; sudo cryptsetup close cap2 && c0rc_info "done"'
 fi
