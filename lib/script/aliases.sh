@@ -24,6 +24,7 @@ alias ww_lsblk_short='sudo lsblk --sort PARTLABEL -o NAME,PARTLABEL,LABEL,SIZE,P
 
 alias ww_vpn_up='sudo route add -net 192.168.3.0/24 gw 192.168.4.1 metric 2; sudo route add default gw 192.168.4.1 metric 2; nmcli c up cd/main-ovpn; c0rc_info "sleep for 5 secs ..."; sleep 5; sudo systemctl restart dnsmasq.service && c0rc_info "done"'
 alias ww_vpn_down='nmcli c down cd/main-ovpn'
+alias ww_pub_ip='dig +short myip.opendns.com @resolver1.opendns.com'
 
 if [ "$(hostname)" = "capetown0" ]; then
     alias ww_cap2_home_mount='sshfs cap2:/home/vitalik /media/vitalik/cap2-home-vitalik && ll /media/vitalik/cap2-home-vitalik && c0rc_info done'
