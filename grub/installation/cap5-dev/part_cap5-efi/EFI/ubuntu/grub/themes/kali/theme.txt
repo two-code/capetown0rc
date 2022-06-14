@@ -1,6 +1,6 @@
 
 # Global Property
-title-text: "cap5"
+title-text: "capetown5 (cap5)"
 desktop-image: "background.png"
 desktop-color: "#2f5595"
 terminal-left: "0"
