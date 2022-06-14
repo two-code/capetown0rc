@@ -3,7 +3,6 @@
 title-text: "cap5"
 desktop-image: "background.png"
 desktop-color: "#2f5595"
-terminal-font: "Unifont Regular 22"
 terminal-left: "0"
 terminal-top: "0"
 terminal-width: "100%"
@@ -16,7 +15,6 @@ terminal-border: "0"
   top = 25%
   width = 50%
   height = 60%
-  item_font = "Unifont Regular 22"
   item_color = "#f3f3f3"
   selected_item_color = "#ffffff"
   icon_width = 0
@@ -37,5 +35,4 @@ terminal-border: "0"
   id = "__timeout__"
   text = "Booting in %d seconds"
   color = "#ffffff"
-  font = "Unifont Regular 22"
 }
