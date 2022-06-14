@@ -1,0 +1,4 @@
+NAME PARTLABEL LABEL       SIZE FSAVAIL PHY-SEC LOG-SEC FSTYPE      TYPE UUID                                 PARTUUID                             MOUNTPOINT
+sda                      465.8G             512     512             disk
+sda2 cap2      capetown2 464.8G             512     512 crypto_LUKS part aa068d9b-954f-4392-bd9f-f3406ebf03bf dae76b41-196b-4ff8-b9f2-424d2a02f671
+sda1 cap2-efi              953M             512     512 vfat        part 7AE6-9961                            afa52be0-1087-4959-9b3b-71930f5ece98

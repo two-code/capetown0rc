@@ -1,2 +1,0 @@
-NAME  SIZE PHY-SEC LOG-SEC    RA WSAME FSTYPE TYPE UUID                                 PARTUUID                             PARTLABEL MOUNTPOINT
-sdc1  953M     512     512 65532   32M vfat   part 7AE6-9961                            afa52be0-1087-4959-9b3b-71930f5ece98           /mnt/cap2-efi

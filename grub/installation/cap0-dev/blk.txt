@@ -1,5 +1,0 @@
-NAME  SIZE PHY-SEC LOG-SEC  RA WSAME FSTYPE TYPE UUID                                 PARTUUID                             PARTLABEL MOUNTPOINT
-sdb1  1.9G     512     512 128    0B ext4   part 9707e94c-9c49-4b5b-ac1f-43d62023e51e d7766520-7355-4c22-908e-876a9bc130b4 boot      /boot
-
-NAME  SIZE PHY-SEC LOG-SEC  RA WSAME FSTYPE TYPE UUID                                 PARTUUID                             PARTLABEL MOUNTPOINT
-sdb2  3.7G     512     512 128    0B vfat   part FF61-55E6                            aec68b69-3343-434d-a3f2-3dca997cc13a efi       /boot/efi

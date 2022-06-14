@@ -1,0 +1,4 @@
+NAME      PARTLABEL LABEL       SIZE FSAVAIL PHY-SEC LOG-SEC FSTYPE      TYPE UUID                                 PARTUUID                             MOUNTPOINT
+nvme0n1                       931.5G             512     512             disk
+nvme0n1p2 cap5      capetown5   931G             512     512 crypto_LUKS part a16d18d8-41af-4297-ad00-04ae11db3ade 205816f9-7050-441f-83fe-6cb48f47ed34
+nvme0n1p1 cap5-efi              512M             512     512 vfat        part 003E-DCFB                            b72e8582-e8c8-434c-966c-277aabff366d

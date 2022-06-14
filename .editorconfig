@@ -42,3 +42,7 @@ indent_size = 4
 [*.proto]
 indent_style = space
 indent_size = 2
+
+[grub.cfg]
+indent_style = tab
+indent_size = 4
