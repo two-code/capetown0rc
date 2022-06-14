@@ -1,7 +1,7 @@
 
 # Global Property
 title-text: "cap5"
-desktop-image: "background.jpg"
+desktop-image: "background.png"
 desktop-color: "#2f5595"
 terminal-font: "Unifont Regular 22"
 terminal-left: "0"
