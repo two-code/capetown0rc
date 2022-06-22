@@ -41,6 +41,8 @@ if [ -z $C0RC_BCK_INSENSITIVE_TARGETS ]; then
         C0RC_BCK_INSENSITIVE_TARGETS="bck7 bck4 bck3"
     elif [ "$(hostname)" = "capetown2" ]; then
         C0RC_BCK_INSENSITIVE_TARGETS="bck3 bck8"
+    elif [ "$(hostname)" = "capetown5" ]; then
+        C0RC_BCK_INSENSITIVE_TARGETS="bck3"
     else
         C0RC_BCK_INSENSITIVE_TARGETS=""
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_INSENSITIVE_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
@@ -53,6 +55,8 @@ if [ -z $C0RC_BCK_SYSTEM_TARGETS ]; then
         C0RC_BCK_SYSTEM_TARGETS="bck7 bck4"
     elif [ "$(hostname)" = "capetown2" ]; then
         C0RC_BCK_SYSTEM_TARGETS="bck8 bck3"
+    elif [ "$(hostname)" = "capetown5" ]; then
+        C0RC_BCK_SYSTEM_TARGETS="bck3"
     else
         C0RC_BCK_SYSTEM_TARGETS=""
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_SYSTEM_TARGETS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
@@ -67,6 +71,8 @@ if [ -z $C0RC_BCK_WS_TARGET ]; then
         C0RC_BCK_WS_TARGET="bck3"
     elif [ "$(hostname)" = "capetown2" ]; then
         C0RC_BCK_WS_TARGET="bck3"
+    elif [ "$(hostname)" = "capetown5" ]; then
+        C0RC_BCK_WS_TARGET=""
     else
         C0RC_BCK_WS_TARGET=""
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_TARGET${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
@@ -88,6 +94,8 @@ if [ -z $C0RC_BCK_WS_RESTORE_EXCLUSIONS ]; then
         C0RC_BCK_WS_RESTORE_EXCLUSIONS='/_desktop/***
 /_garbage/***
 /_vm/***'
+    elif [ "$(hostname)" = "capetown5" ]; then
+        C0RC_BCK_WS_RESTORE_EXCLUSIONS=''
     else
         C0RC_BCK_WS_RESTORE_EXCLUSIONS="/***"
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_RESTORE_EXCLUSIONS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
@@ -111,6 +119,8 @@ if [ -z $C0RC_BCK_WS_RUN_EXCLUSIONS ]; then
         C0RC_BCK_WS_RUN_EXCLUSIONS='
 /_media/_os_iso/***
 /_vm/***'
+    elif [ "$(hostname)" = "capetown5" ]; then
+        C0RC_BCK_WS_RUN_EXCLUSIONS=''
     else
         C0RC_BCK_WS_RUN_EXCLUSIONS="/***"
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_BCK_WS_RUN_EXCLUSIONS${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
@@ -122,6 +132,8 @@ if [ -z $C0RC_BCK_REGULAR_PLAN_KINDS ]; then
     if [ "$(hostname)" = "capetown0" ]; then
         C0RC_BCK_REGULAR_PLAN_KINDS="$C0RC_BCK_KIND_INSENSITIVE $C0RC_BCK_KIND_SYSTEM"
     elif [ "$(hostname)" = "capetown2" ]; then
+        C0RC_BCK_REGULAR_PLAN_KINDS="$C0RC_BCK_KIND_INSENSITIVE $C0RC_BCK_KIND_SYSTEM"
+    elif [ "$(hostname)" = "capetown5" ]; then
         C0RC_BCK_REGULAR_PLAN_KINDS="$C0RC_BCK_KIND_INSENSITIVE $C0RC_BCK_KIND_SYSTEM"
     else
         C0RC_BCK_REGULAR_PLAN_KINDS=""
@@ -143,6 +155,8 @@ if [ -z $C0RC_SECV_IMG ]; then
         C0RC_SECV_IMG="$HOME/.secv-c0.img"
     elif [ "$(hostname)" = "capetown2" ]; then
         C0RC_SECV_IMG="$HOME/.secv-c2.img"
+    elif [ "$(hostname)" = "capetown5" ]; then
+        C0RC_SECV_IMG="$HOME/.secv-c5.img"
     else
         C0RC_SECV_IMG=""
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_IMG${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
@@ -155,6 +169,8 @@ if [ -z $C0RC_SECV_LOOP_NAME ]; then
         C0RC_SECV_LOOP_NAME="loop937"
     elif [ "$(hostname)" = "capetown2" ]; then
         C0RC_SECV_LOOP_NAME="loop941"
+    elif [ "$(hostname)" = "capetown5" ]; then
+        C0RC_SECV_LOOP_NAME="loop947"
     else
         C0RC_SECV_LOOP_NAME=""
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_LOOP_NAME${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2
@@ -167,6 +183,8 @@ if [ -z $C0RC_SECV_LUKS_CONTAINER_NAME ]; then
         C0RC_SECV_LUKS_CONTAINER_NAME="secv-c0"
     elif [ "$(hostname)" = "capetown2" ]; then
         C0RC_SECV_LUKS_CONTAINER_NAME="secv-c2"
+    elif [ "$(hostname)" = "capetown5" ]; then
+        C0RC_SECV_LUKS_CONTAINER_NAME="secv-c5"
     else
         C0RC_SECV_LUKS_CONTAINER_NAME=""
         echo -e "${TXT_COLOR_WARN}[$(date +'%Y-%m-%dT%H:%M:%S%z')] WRN:${TXT_COLOR_NONE} can't set appropriate value for '${TXT_COLOR_YELLOW}C0RC_SECV_LUKS_CONTAINER_NAME${TXT_COLOR_NONE}'; unrecognized hostname '${TXT_COLOR_YELLOW}$(hostname)${TXT_COLOR_NONE}'" >&2

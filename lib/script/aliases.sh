@@ -29,7 +29,7 @@ alias ww_pub_ip='dig +short myip.opendns.com @resolver1.opendns.com'
 if [ "$(hostname)" = "capetown0" ]; then
     alias ww_cap2_home_mount='sshfs cap2:/home/vitalik /media/vitalik/cap2-home-vitalik && ll /media/vitalik/cap2-home-vitalik && c0rc_info done'
     alias ww_cap2_home_umount='sudo sync -f; sudo umount /media/vitalik/cap2-home-vitalik && c0rc_info done'
-elif [ "$(hostname)" = "capetown2" ]; then
+elif [ "$(hostname)" = "capetown2" ] || [ "$(hostname)" = "capetown5" ]; then
     alias ww_cap0_home_mount='sshfs cap0:/home/vitalik /media/vitalik/cap0-home-vitalik && ll /media/vitalik/cap0-home-vitalik && c0rc_info done'
     alias ww_cap0_home_mount_beeline='sshfs cap0_beeline:/home/vitalik /media/vitalik/cap0-home-vitalik && ll /media/vitalik/cap0-home-vitalik && c0rc_info done'
     alias ww_cap0_home_umount='sudo sync -f; sudo umount /media/vitalik/cap0-home-vitalik && c0rc_info done'
